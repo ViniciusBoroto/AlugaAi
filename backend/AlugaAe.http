@@ -1,0 +1,6 @@
+@AlugaAe_HostAddress = http://localhost:5082
+
+GET {{AlugaAe_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
