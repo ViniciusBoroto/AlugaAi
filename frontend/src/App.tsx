@@ -1,20 +1,22 @@
-import { Button } from "@/components/ui/button"
+import { ProductCard } from "./components/product-card"
+import { Button } from "./components/ui/button"
 
 export function App() {
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
+    <div className="flex min-h-full-100vh w-full items-center justify-center p-0 m-0 border">
+      <div className="w-full max-w-full">
+        <header className="h-18 min-w-100vw p-0 border-b-2 px-5 flex items-center justify-between">
+          <h1 className="text-2xl font-bold border">Aluguel</h1>
+          <Button>Login</Button>
+        </header>
+        <div className="grid grid-cols-2 gap-8 p-10">
+          <ProductCard></ProductCard>
+          <ProductCard></ProductCard>
+          <ProductCard></ProductCard>
+          <ProductCard></ProductCard>
         </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
-      </div>
-    </div>
+      </div >
+    </div >
   )
 }
 
