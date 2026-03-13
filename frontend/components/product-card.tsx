@@ -8,6 +8,8 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
+import { redirect } from "next/navigation"
+
 
 export function ProductCard() {
     return (
@@ -20,16 +22,16 @@ export function ProductCard() {
             />
             <CardHeader>
                 <CardAction>
-                    <Badge variant="secondary">Featured</Badge>
+                    <Badge variant="secondary">Construção</Badge>
                 </CardAction>
-                <CardTitle>Design systems meetup</CardTitle>
+                <CardTitle>Pá de construção</CardTitle>
                 <CardDescription>
-                    A practical talk on component APIs, accessibility, and shipping
-                    faster.
+                    Definitivamente uma das pás já feitas
                 </CardDescription>
+                <span>R$ 20/dia</span>
             </CardHeader>
             <CardFooter>
-                <Button className="w-full">View Event</Button>
+                <Button className="w-full">Alugar</Button>
             </CardFooter>
         </Card>
     )
