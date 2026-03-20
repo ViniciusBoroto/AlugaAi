@@ -10,6 +10,7 @@ namespace AlugaAi.Data
         }
 
         public DbSet<Renter> Renters => Set<Renter>();
+        public DbSet<Category> Categories => Set<Category>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
