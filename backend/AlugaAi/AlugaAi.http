@@ -1,0 +1,6 @@
+@AlugaAi_HostAddress = http://localhost:5208
+
+GET {{AlugaAi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
