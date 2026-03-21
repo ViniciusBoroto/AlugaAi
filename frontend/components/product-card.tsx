@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
+import { 
   Card,
   CardAction,
   CardDescription,
@@ -11,11 +11,21 @@ import {
 import { Star } from "lucide-react"
 
 type ProductCardProps = {
+  title?: string
+  description?: string
+  price?: number
+  image?: string
+  category?: string
   rating?: number
   reviewsCount?: number
 }
 
 export function ProductCard({
+  title = "Pá de construção",
+  description = "Definitivamente uma das pás já feitas",
+  price = 20,
+  image = "https://cdnv2.moovin.com.br/amerika/imagens/produtos/det/-66e486cfddd31.png",
+  category = "Construção",
   rating = 4.8,
   reviewsCount = 123,
 }: ProductCardProps) {
@@ -23,19 +33,19 @@ export function ProductCard({
     <Card className="relative mx-auto w-full max-w-sm pt-0">
       <div className="absolute inset-0 z-30 aspect-video bg-black/35" />
       <img
-        src="https://cdnv2.moovin.com.br/amerika/imagens/produtos/det/-66e486cfddd31.png"
-        alt="Pá"
+        src={image}
+        alt={title}
         className="relative z-20 aspect-video h-full object-contain"
       />
       <CardHeader>
         <CardAction>
           <Badge variant="secondary">Construção</Badge>
         </CardAction>
-        <CardTitle>Pá de construção</CardTitle>
+        <CardTitle>{title}</CardTitle>
         <CardDescription className="col-span-2 pb-2">
           <div className="grid w-full grid-cols-[1fr_auto] items-center gap-x-12">
             <span className="min-w-0">
-              Definitivamente uma das pás já feitas
+              {description}
             </span>
             <span className="inline-flex items-center gap-1 justify-self-end">
               <Star
@@ -55,7 +65,7 @@ export function ProductCard({
           </div>
         </CardDescription>
         <div>
-          <span className="text-lg font-bold">R$ 20</span>
+          <span className="text-lg font-bold">R$ {price || 20}</span>
           <span className="text-xs text-muted-foreground">/dia</span>
           {/* Dia é menor */}
         </div>
