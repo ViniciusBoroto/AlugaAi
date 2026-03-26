@@ -18,6 +18,8 @@ builder.Services.AddScoped<IRenterRepository, RenterRepository>();
 builder.Services.AddScoped<IRenterService, RenterService>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IRentRepository, RentRepository>();
+builder.Services.AddScoped<IRentService, RentService>();
 builder.Services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
 
 var app = builder.Build();
