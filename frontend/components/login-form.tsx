@@ -20,19 +20,14 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   return (
+    
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
-        <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account
-          </CardDescription>
-        </CardHeader>
         <CardContent>
           <form>
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="email">E-mail</FieldLabel>
                 <Input
                   id="email"
                   type="email"
@@ -42,29 +37,31 @@ export function LoginForm({
               </Field>
               <Field>
                 <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
+                  <FieldLabel htmlFor="password">Senha</FieldLabel>
+                 
                 </div>
                 <Input id="password" type="password" required />
               </Field>
               <Field>
-                <Button type="submit">Login</Button>
+                <Button type="submit">Entrar</Button>
                 <Button variant="outline" type="button">
-                  Login with Google
+                  Entrar com o Google
                 </Button>
-                <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                <FieldDescription>
+                  <a
+                    href="#"
+                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline "
+                  >
+                    Esqueceu sua senha?
+                  </a>
                 </FieldDescription>
+                 
               </Field>
             </FieldGroup>
           </form>
         </CardContent>
       </Card>
-    </div>
+       </div>
+    
   )
 }
