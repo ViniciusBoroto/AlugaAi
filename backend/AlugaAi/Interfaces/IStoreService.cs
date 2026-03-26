@@ -7,8 +7,8 @@ namespace AlugaAi.Interfaces
     {
         Task<StoreViewModel> CreateStoreAsync(CreateStoreInputModel request);
         Task<List<StoreViewModel>> GetAllAsync();
-        Task<RenterViewModel?> GetByIdAsync(string id);
-        Task<StoreViewModel> UpdateAsync(Guid id, UpdateStoreInputModel request);
+        Task<StoreViewModel?> GetByIdAsync(Guid id);
+        Task<StoreViewModel?> UpdateAsync(Guid id, UpdateStoreInputModel request);
         Task<bool> DeleteAsync(Guid id);
     }
 }

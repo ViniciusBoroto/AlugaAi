@@ -16,6 +16,8 @@ builder.Services.AddDbContext<AlugaAiDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Supabase")));
 builder.Services.AddScoped<IRenterRepository, RenterRepository>();
 builder.Services.AddScoped<IRenterService, RenterService>();
+builder.Services.AddScoped<IStoreRepository, StoreRepository>();
+builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IRentRepository, RentRepository>();

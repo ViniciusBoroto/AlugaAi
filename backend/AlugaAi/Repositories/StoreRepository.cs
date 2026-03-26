@@ -18,16 +18,24 @@ namespace AlugaAi.Repositories
 
         public async Task<StoreViewModel> CreateStoreAsync(CreateStoreInputModel request, string hashedPassword)
         {
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Email = request.Email,
+                PasswordHash = hashedPassword,
+                Role = UserRole.Store
+            };
+
             var store = new Store
             {
                 Id = Guid.NewGuid(),
+                UserId = user.Id,
+                User = user,
                 FantasyName = request.FantasyName,
                 Cnpj = request.Cnpj,
                 Adress = request.Adress,
                 CEP = request.CEP,
-                PhoneNumber = request.PhoneNumber,
-                Email = request.Email,
-                PasswordHash = hashedPassword
+                PhoneNumber = request.PhoneNumber
             };
 
             _context.Stores.Add(store);
@@ -39,10 +47,12 @@ namespace AlugaAi.Repositories
         public async Task<bool> DeleteAsync(Guid id)
         {
             var store = await _context.Stores
+                .Include(s => s.User)
                 .FirstOrDefaultAsync(s => s.Id == id && s.RemovedAt == null);
             if (store == null) { return false; }
 
             store.RemovedAt = DateTime.UtcNow;
+            store.User.RemovedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             return true;
         }
@@ -50,6 +60,8 @@ namespace AlugaAi.Repositories
         public Task<List<StoreViewModel>> GetAllAsync()
         {
             return _context.Stores
+                .AsNoTracking()
+                .Include(store => store.User)
                 .Where(store => store.RemovedAt == null)
                 .OrderBy(store => store.FantasyName)
                 .Select(store => ToViewModel(store))
@@ -60,6 +72,7 @@ namespace AlugaAi.Repositories
         {
             return await _context.Stores
                 .AsNoTracking()
+                .Include(store => store.User)
                 .Where(store => store.Id == id && store.RemovedAt == null)
                 .Select(store => ToViewModel(store))
                 .FirstOrDefaultAsync();
@@ -68,6 +81,7 @@ namespace AlugaAi.Repositories
         public async Task<StoreViewModel?> UpdateAsync(Guid id, UpdateStoreInputModel request, string? hashedPassword)
         {
             var store = await _context.Stores
+                .Include(current => current.User)
                 .FirstOrDefaultAsync(current => current.Id == id && current.RemovedAt == null);
 
             if (store == null)
@@ -80,12 +94,12 @@ namespace AlugaAi.Repositories
             store.Adress = request.Adress;
             store.CEP = request.CEP;
             store.PhoneNumber = request.PhoneNumber;
-            store.Email = request.Email;
+            store.User.Email = request.Email;
 
 
             if (!string.IsNullOrEmpty(hashedPassword))
             {
-                store.PasswordHash = hashedPassword;
+                store.User.PasswordHash = hashedPassword;
             }
 
             await _context.SaveChangesAsync();
@@ -102,7 +116,7 @@ namespace AlugaAi.Repositories
                 store.Adress,
                 store.CEP,
                 store.PhoneNumber,
-                store.Email);
+                store.User.Email);
         }
     }
 }

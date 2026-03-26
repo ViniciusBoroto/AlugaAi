@@ -18,12 +18,20 @@ namespace AlugaAi.Repositories
 
         public async Task<RenterViewModel> CreateRenterAsync(CreateRenterInputModel request, string hashedPassword)
         {
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Email = request.Email,
+                PasswordHash = hashedPassword,
+                Role = UserRole.Renter
+            };
+
             var renter = new Renter
             {
                 Id = Guid.NewGuid(),
+                UserId = user.Id,
+                User = user,
                 Name = request.Name,
-                Email = request.Email,
-                PasswordHash = hashedPassword,
                 Cpf = request.Cpf,
                 PhoneNumber = request.PhoneNumber
             };
@@ -38,6 +46,7 @@ namespace AlugaAi.Repositories
         {
             return await _context.Renters
                 .AsNoTracking()
+                .Include(renter => renter.User)
                 .Where(renter => renter.RemovedAt == null)
                 .OrderBy(renter => renter.Name)
                 .Select(renter => ToViewModel(renter))
@@ -48,6 +57,7 @@ namespace AlugaAi.Repositories
         {
             return await _context.Renters
                 .AsNoTracking()
+                .Include(renter => renter.User)
                 .Where(renter => renter.Id == id && renter.RemovedAt == null)
                 .Select(renter => ToViewModel(renter))
                 .FirstOrDefaultAsync();
@@ -56,6 +66,7 @@ namespace AlugaAi.Repositories
         public async Task<RenterViewModel?> UpdateAsync(Guid id, UpdateRenterInputModel request, string? hashedPassword)
         {
             var renter = await _context.Renters
+                .Include(current => current.User)
                 .FirstOrDefaultAsync(current => current.Id == id && current.RemovedAt == null);
 
             if (renter is null)
@@ -65,12 +76,12 @@ namespace AlugaAi.Repositories
 
             renter.Name = request.Name;
             renter.Cpf = request.Cpf;
-            renter.Email = request.Email;
             renter.PhoneNumber = request.PhoneNumber;
+            renter.User.Email = request.Email;
 
             if (!string.IsNullOrWhiteSpace(hashedPassword))
             {
-                renter.PasswordHash = hashedPassword;
+                renter.User.PasswordHash = hashedPassword;
             }
 
             await _context.SaveChangesAsync();
@@ -81,6 +92,7 @@ namespace AlugaAi.Repositories
         public async Task<bool> DeleteAsync(Guid id)
         {
             var renter = await _context.Renters
+                .Include(current => current.User)
                 .FirstOrDefaultAsync(current => current.Id == id && current.RemovedAt == null);
 
             if (renter is null)
@@ -89,6 +101,7 @@ namespace AlugaAi.Repositories
             }
 
             renter.RemovedAt = DateTime.UtcNow;
+            renter.User.RemovedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             return true;
@@ -100,7 +113,7 @@ namespace AlugaAi.Repositories
                 renter.Id,
                 renter.Name,
                 renter.Cpf,
-                renter.Email,
+                renter.User.Email,
                 renter.PhoneNumber);
         }
     }
