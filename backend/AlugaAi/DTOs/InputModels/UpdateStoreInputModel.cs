@@ -6,6 +6,5 @@
         string Adress,
         string CEP,
         string Email,
-        string PhoneNumber,
-        string? Password);
+        string PhoneNumber);
 }

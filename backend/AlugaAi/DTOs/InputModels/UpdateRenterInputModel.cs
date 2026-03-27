@@ -4,6 +4,5 @@ namespace AlugaAi.DTOs.InputModels
         string Name,
         string Cpf,
         string Email,
-        string PhoneNumber,
-        string? Password);
+        string PhoneNumber);
 }

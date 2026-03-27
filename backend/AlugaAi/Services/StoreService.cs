@@ -43,19 +43,7 @@ namespace AlugaAi.Services
 
         public async Task<StoreViewModel?> UpdateAsync(Guid id, UpdateStoreInputModel request)
         {
-            string? hashedPassword = null;
-
-            if (!string.IsNullOrEmpty(request.Password))
-            {
-                if (request.Password.Length < 6)
-                {
-                    throw new ArgumentException("A senha deve conter pelo menos 6 caracteres.");
-                }
-
-                hashedPassword = _passwordHasher.HashPassword(request.Email, request.Password);
-            }
-
-            return await _storeRepository.UpdateAsync(id, request, hashedPassword);
+            return await _storeRepository.UpdateAsync(id, request);
         }
     }
 }
