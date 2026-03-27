@@ -63,7 +63,7 @@ namespace AlugaAi.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<RenterViewModel?> UpdateAsync(Guid id, UpdateRenterInputModel request, string? hashedPassword)
+        public async Task<RenterViewModel?> UpdateAsync(Guid id, UpdateRenterInputModel request)
         {
             var renter = await _context.Renters
                 .Include(current => current.User)
@@ -78,11 +78,6 @@ namespace AlugaAi.Repositories
             renter.Cpf = request.Cpf;
             renter.PhoneNumber = request.PhoneNumber;
             renter.User.Email = request.Email;
-
-            if (!string.IsNullOrWhiteSpace(hashedPassword))
-            {
-                renter.User.PasswordHash = hashedPassword;
-            }
 
             await _context.SaveChangesAsync();
 

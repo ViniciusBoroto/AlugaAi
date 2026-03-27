@@ -8,7 +8,7 @@ namespace AlugaAi.Interfaces
         Task<StoreViewModel> CreateStoreAsync(CreateStoreInputModel request, string hashedPassword);
         Task<List<StoreViewModel>> GetAllAsync();
         Task<StoreViewModel?> GetByIdAsync(Guid id);
-        Task<StoreViewModel?> UpdateAsync(Guid id, UpdateStoreInputModel request, string? hashedPassword);
+        Task<StoreViewModel?> UpdateAsync(Guid id, UpdateStoreInputModel request);
         Task<bool> DeleteAsync(Guid id);
     }
 }

@@ -42,19 +42,7 @@ namespace AlugaAi.Services
 
         public async Task<RenterViewModel?> UpdateAsync(Guid id, UpdateRenterInputModel request)
         {
-            string? hashedPassword = null;
-
-            if (!string.IsNullOrWhiteSpace(request.Password))
-            {
-                if (request.Password.Length < 6)
-                {
-                    throw new ArgumentException("Password must be at least 6 characters long.");
-                }
-
-                hashedPassword = _hasher.HashPassword(request.Email, request.Password);
-            }
-
-            return await _repository.UpdateAsync(id, request, hashedPassword);
+            return await _repository.UpdateAsync(id, request);
         }
 
         public Task<bool> DeleteAsync(Guid id)

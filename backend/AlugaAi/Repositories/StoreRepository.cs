@@ -78,7 +78,7 @@ namespace AlugaAi.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<StoreViewModel?> UpdateAsync(Guid id, UpdateStoreInputModel request, string? hashedPassword)
+        public async Task<StoreViewModel?> UpdateAsync(Guid id, UpdateStoreInputModel request)
         {
             var store = await _context.Stores
                 .Include(current => current.User)
@@ -95,12 +95,6 @@ namespace AlugaAi.Repositories
             store.CEP = request.CEP;
             store.PhoneNumber = request.PhoneNumber;
             store.User.Email = request.Email;
-
-
-            if (!string.IsNullOrEmpty(hashedPassword))
-            {
-                store.User.PasswordHash = hashedPassword;
-            }
 
             await _context.SaveChangesAsync();
 
