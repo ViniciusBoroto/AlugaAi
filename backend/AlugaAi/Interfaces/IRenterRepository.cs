@@ -11,7 +11,7 @@ namespace AlugaAi.Interfaces
         Task<RenterViewModel> CreateRenterAsync(CreateRenterInputModel request, string hashedPassword);
         Task<List<RenterViewModel>> GetAllAsync();
         Task<RenterViewModel?> GetByIdAsync(Guid id);
-        Task<RenterViewModel?> UpdateAsync(Guid id, UpdateRenterInputModel request, string? hashedPassword);
+        Task<RenterViewModel?> UpdateAsync(Guid id, UpdateRenterInputModel request);
         Task<bool> DeleteAsync(Guid id);
     }
 }

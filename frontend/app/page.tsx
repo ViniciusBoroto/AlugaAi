@@ -1,7 +1,8 @@
-import { ProductCard } from "@/components/product-card"
+// page.tsx
 import { CategoryTile } from "@/components/home/category-tile"
 import { Button } from "@/components/ui/button"
 import { CarFront, Hammer, House, Leaf } from "lucide-react"
+import { ProductCard, products } from "@/components/product-card"
 import Navbar from "@/components/navbar"
 
 const categories = [
@@ -11,8 +12,6 @@ const categories = [
   { title: "Automotivo", items: 4, icon: CarFront },
 ]
 
-const visibleCards = Array.from({ length: 6 }, (_, index) => index)
-
 export default function Page() {
   return (
     <main className="min-h-svh bg-background">
@@ -20,7 +19,8 @@ export default function Page() {
       <Navbar></Navbar>
       
 
-      <div className="mx-auto w-full max-w-7xl px-4 pt-8 pb-10 sm:px-6 lg:px-8">
+       <div  className="mx-auto w-full max-w-7xl px-4 pt-8 pb-10 sm:px-6 lg:px-8">
+       
 
         <section className="pt-8">
           <h2 className="text-3xl font-semibold tracking-tight">Categorias</h2>
@@ -36,16 +36,16 @@ export default function Page() {
             <h2 className="text-3xl font-semibold tracking-tight">
               Todas as Ferramentas
             </h2>
-            <p className="text-lg text-muted-foreground">19 itens</p>
+            <p className="text-lg text-muted-foreground">{products.length} itens</p>
           </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {visibleCards.map((cardIndex) => (
-              <ProductCard key={cardIndex} />
+            {products.map((product) => (
+              <ProductCard key={product.title} {...product} />
             ))}
           </div>
         </section>
-      </div>
+     </div> 
     </main>
   )
 }
