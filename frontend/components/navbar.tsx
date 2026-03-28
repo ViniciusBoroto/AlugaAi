@@ -6,8 +6,8 @@ import { Search, User } from "lucide-react";
 export default function Navbar() {
 
   return (
-    <nav className="w-full px-24 py-4 flex flex-col gap-3 border-b shadow-secondary-foreground shadow-md/20 ">
-
+    // <nav className="w-full px-24 py-4 flex-col gap-3 border-b shadow-secondary-foreground shadow-md/20 sticky top-0 z-50">
+      <nav className="w-full px-24 py-4 flex flex-col gap-3 border-b shadow-secondary-foreground shadow-md/20 sticky top-0 z-50 bg-background">
       {/* Linha superior: título e ícone */}
       <div className="flex justify-between items-center">
         <h1 className=" text-xl font-bold">
@@ -20,11 +20,11 @@ export default function Navbar() {
 
       {/* Input de busca com lupa */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2  w-4 h-4" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2  w-5 h-5" />
         <Input
           type="text"
           placeholder="Buscar ferramentas..."
-          className="pl-10"
+          className="pl-10 h-12"
         />
       </div>
 

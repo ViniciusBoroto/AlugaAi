@@ -2,6 +2,7 @@ import { ProductCard } from "@/components/product-card"
 import { CategoryTile } from "@/components/home/category-tile"
 import { Button } from "@/components/ui/button"
 import { CarFront, Hammer, House, Leaf } from "lucide-react"
+import Navbar from "@/components/navbar"
 
 const categories = [
   { title: "Construção", items: 7, icon: Hammer },
@@ -15,15 +16,15 @@ const visibleCards = Array.from({ length: 6 }, (_, index) => index)
 export default function Page() {
   return (
     <main className="min-h-svh bg-background">
+             
+      <Navbar></Navbar>
+      
+
       <div className="mx-auto w-full max-w-7xl px-4 pt-8 pb-10 sm:px-6 lg:px-8">
-        <header className="flex h-18 items-center justify-between border-b-2 px-5">
-          <h1 className="text-2xl font-bold border">Aluguel</h1>
-          <Button>Login</Button>
-        </header>
 
         <section className="pt-8">
           <h2 className="text-3xl font-semibold tracking-tight">Categorias</h2>
-          <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="mt-5 grid grid-cols-4 gap-4 ">
             {categories.map((category) => (
               <CategoryTile key={category.title} {...category} />
             ))}

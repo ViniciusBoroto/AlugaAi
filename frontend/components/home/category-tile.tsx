@@ -18,12 +18,12 @@ export function CategoryTile({
   return (
     <article
       className={cn(
-        "flex items-center gap-4 rounded-2xl border border-border bg-card px-4 py-5",
+        "flex items-center gap-3 rounded-2xl border border-border bg-card px-3 py-4",
         className
       )}
     >
-      <span className="flex size-11 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-        <Icon className="size-5" />
+      <span className="flex size-9 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+        <Icon className="size-4" />
       </span>
 
       <div>
