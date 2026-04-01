@@ -1,13 +1,22 @@
 import { LoginForm } from "@/components/login-form"
+import { Wrench } from "lucide-react"
 
 export default function Page() {
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm flex-col items-center justify-between gap-6">
-        <h1>ToolRent</h1>
-        <h2>Alugue ferramentas com facilidade</h2>
-        <LoginForm />
+    <div className="flex min-h-svh w-full flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+      
+      {/* Ícone */}
+      <div className="flex size-16 items-center justify-center rounded-2xl bg-primary">
+        <Wrench className="size-8 text-primary-foreground" />
       </div>
+
+      {/* Título */}
+      <div className="text-center">
+        <h1 className="text-3xl font-bold">Aluguel de ferramentas</h1>
+        <p className="text-muted-foreground">Alugue ferramentas com facilidade</p>
+      </div>
+
+      <LoginForm />
     </div>
   )
 }

@@ -1,29 +1,14 @@
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
+import { Card, CardContent } from "@/components/ui/card"
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 
-export function LoginForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardContent>
+    <div className={cn("flex flex-col gap-4 w-full max-w-md", className)} {...props}>
+      <Card className="rounded-2xl">
+        <CardContent className="pt-6">
           <form>
             <FieldGroup>
               <Field>
@@ -31,37 +16,38 @@ export function LoginForm({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="seu@email.com"
                   required
                 />
               </Field>
+
               <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Senha</FieldLabel>
-                 
-                </div>
-                <Input id="password" type="password" required />
+                <FieldLabel htmlFor="password">Senha</FieldLabel>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                />
               </Field>
+
               <Field>
-                <Button type="submit">Entrar</Button>
-                <Button variant="outline" type="button">
-                  Entrar com o Google
+                <Button type="submit" className="w-full">
+                  Entrar
                 </Button>
-                <FieldDescription>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline "
-                  >
-                    Esqueceu sua senha?
-                  </a>
-                </FieldDescription>
-                 
+                <Button variant="link" type="button" className="w-full">
+                  Criar conta
+                </Button>
               </Field>
             </FieldGroup>
           </form>
         </CardContent>
       </Card>
-       </div>
-    
+
+      <p className="text-center text-sm text-muted-foreground">
+        <a href="#" className="hover:underline">
+          Esqueceu sua senha?
+        </a>
+      </p>
+    </div>
   )
 }
