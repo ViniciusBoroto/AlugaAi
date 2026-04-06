@@ -1,8 +1,8 @@
 // page.tsx
 import { CategoryTile } from "@/components/home/category-tile"
-import { Button } from "@/components/ui/button"
 import { CarFront, Hammer, House, Leaf } from "lucide-react"
-import { ProductCard, products } from "@/components/product-card"
+import { ProductCard } from "@/components/product-card"
+import { products } from "@/lib/products"
 import Navbar from "@/components/navbar"
 
 const categories = [
@@ -41,7 +41,7 @@ export default function Page() {
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
             {products.map((product) => (
-              <ProductCard key={product.title} {...product} />
+              <ProductCard key={product.id} {...product} />
             ))}
           </div>
         </section>
