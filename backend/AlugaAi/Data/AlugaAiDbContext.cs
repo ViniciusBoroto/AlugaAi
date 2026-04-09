@@ -12,6 +12,7 @@ namespace AlugaAi.Data
         public DbSet<User> Users => Set<User>();
         public DbSet<Renter> Renters => Set<Renter>();
         public DbSet<Category> Categories => Set<Category>();
+        public DbSet<Product> Products => Set<Product>();
         public DbSet<Store> Stores => Set<Store>();
         public DbSet<Rent> Rents => Set<Rent>();
 
@@ -30,6 +31,25 @@ namespace AlugaAi.Data
                 entity.Property(user => user.CreatedAt).IsRequired();
 
                 entity.HasIndex(user => user.Email).IsUnique();
+            });
+
+            modelBuilder.Entity<Product>(entity =>
+            {
+                entity.ToTable("products");
+                entity.HasKey(product => product.Id);
+
+                entity.Property(product => product.Name).IsRequired().HasMaxLength(150);
+                entity.Property(product => product.Description).IsRequired().HasMaxLength(1000);
+                entity.Property(product => product.PricePerDay).IsRequired().HasColumnType("decimal(18,2)");
+                entity.Property(product => product.PhotoUrl).HasMaxLength(500);
+                entity.Property(product => product.CreatedAt).IsRequired();
+
+                entity.Property(product => product.CategoryId).IsRequired();
+
+                entity.HasOne(product => product.Category)
+                    .WithMany(category => category.Products)
+                    .HasForeignKey(product => product.CategoryId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<Renter>(entity =>
