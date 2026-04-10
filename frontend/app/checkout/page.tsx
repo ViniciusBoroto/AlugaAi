@@ -16,3 +16,5 @@ export function CalendarDemo() {
         />
     )
 }
+
+export default CalendarDemo
