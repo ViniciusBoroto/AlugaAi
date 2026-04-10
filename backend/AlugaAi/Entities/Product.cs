@@ -8,6 +8,8 @@
         public string PhotoUrl { get; set; }
         public Category Category { get; set; }
         public Guid CategoryId { get; set; }
+        public Guid StoreId { get; set; }
+        public Store Store { get; set; }
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
     }
 }

@@ -7,6 +7,7 @@ namespace AlugaAi.DTOs.ViewModels
         decimal PricePerDay,
         string PhotoUrl,
         Guid CategoryId,
+        Guid StoreId,
         string CategoryName
     );
 }

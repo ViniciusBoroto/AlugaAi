@@ -25,7 +25,8 @@ namespace AlugaAi.Repositories
                 Description = request.Description,
                 PricePerDay = request.PricePerDay,
                 PhotoUrl = request.PhotoUrl,
-                CategoryId = request.CategoryId
+                CategoryId = request.CategoryId,
+                StoreId = request.StoreId
             };
 
             _context.Products.Add(product);
@@ -67,6 +68,7 @@ namespace AlugaAi.Repositories
             product.PricePerDay = request.PricePerDay;
             product.PhotoUrl = request.PhotoUrl;
             product.CategoryId = request.CategoryId;
+            product.StoreId = request.StoreId;
 
             await _context.SaveChangesAsync();
 
@@ -94,6 +96,7 @@ namespace AlugaAi.Repositories
                 p.PricePerDay,
                 p.PhotoUrl,
                 p.CategoryId,
+                p.StoreId,
                 p.Category?.Name ?? string.Empty
             );
         }

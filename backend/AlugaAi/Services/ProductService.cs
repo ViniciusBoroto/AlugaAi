@@ -21,7 +21,7 @@ namespace AlugaAi.Services
             if (request.PricePerDay <= 0)
                 throw new ArgumentException("PricePerDay must be greater than zero.");
 
-            return await _repository.CreateAsync(request);
+            return await _repository.CreateAsync(request); // This line is unchanged
         }
 
         public Task<List<ProductViewModel>> GetAllAsync() => _repository.GetAllAsync();

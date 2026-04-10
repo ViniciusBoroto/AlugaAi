@@ -82,6 +82,8 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IRentRepository, RentRepository>();
 builder.Services.AddScoped<IRentService, RentService>();
 builder.Services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 var app = builder.Build();
 
@@ -98,5 +100,27 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Apply EF Core migrations at startup (will attempt to connect using the configured connection string or
+// environment variables used by the DesignTimeDbContextFactory). Wrap in try/catch to avoid crashing the app
+// when the database is not available in the current environment.
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var db = services.GetRequiredService<AlugaAi.Data.AlugaAiDbContext>();
+        db.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        var loggerFactory = services.GetService(typeof(Microsoft.Extensions.Logging.ILoggerFactory)) as Microsoft.Extensions.Logging.ILoggerFactory;
+        var logger = loggerFactory?.CreateLogger("DatabaseMigrations");
+        if (logger != null)
+        {
+            logger.LogError(ex, "An error occurred while migrating the database. Ensure the database is available and the connection string is correct.");
+        }
+    }
+}
 
 app.Run();

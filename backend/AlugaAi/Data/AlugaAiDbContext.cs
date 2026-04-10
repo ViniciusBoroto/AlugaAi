@@ -14,6 +14,7 @@ namespace AlugaAi.Data
         public DbSet<Category> Categories => Set<Category>();
         public DbSet<Product> Products => Set<Product>();
         public DbSet<Store> Stores => Set<Store>();
+        public DbSet<Review> Reviews => Set<Review>();
         public DbSet<Rent> Rents => Set<Rent>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -45,10 +46,64 @@ namespace AlugaAi.Data
                 entity.Property(product => product.CreatedAt).IsRequired();
 
                 entity.Property(product => product.CategoryId).IsRequired();
+                entity.Property(product => product.StoreId).IsRequired();
 
                 entity.HasOne(product => product.Category)
                     .WithMany(category => category.Products)
                     .HasForeignKey(product => product.CategoryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(product => product.Store)
+                    .WithMany(store => store.Products)
+                    .HasForeignKey(product => product.StoreId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Review>(entity =>
+            {
+                entity.ToTable("reviews");
+                entity.HasKey(r => r.Id);
+
+                entity.Property(r => r.Comment).IsRequired().HasMaxLength(1000);
+                entity.Property(r => r.Rating).IsRequired();
+                entity.Property(r => r.CreatedAt).IsRequired();
+
+                entity.Property(r => r.RenterId).IsRequired();
+                entity.Property(r => r.ProductId).IsRequired();
+
+                entity.HasOne(r => r.Renter)
+                    .WithMany()
+                    .HasForeignKey(r => r.RenterId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.Product)
+                    .WithMany(p => p.Reviews)
+                    .HasForeignKey(r => r.ProductId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Rent>(entity =>
+            {
+                entity.ToTable("rents");
+                entity.HasKey(r => r.Id);
+
+                entity.Property(r => r.RentalDate).IsRequired();
+                entity.Property(r => r.ReturnDate).IsRequired();
+                entity.Property(r => r.DeliveredAt);
+                entity.Property(r => r.ReturnedAt);
+                entity.Property(r => r.CreatedAt).IsRequired();
+
+                entity.Property(r => r.ProductId).IsRequired();
+                entity.Property(r => r.RenterId).IsRequired();
+
+                entity.HasOne(r => r.Product)
+                    .WithMany()
+                    .HasForeignKey(r => r.ProductId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.Renter)
+                    .WithMany()
+                    .HasForeignKey(r => r.RenterId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
