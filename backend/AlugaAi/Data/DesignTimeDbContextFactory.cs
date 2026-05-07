@@ -11,11 +11,10 @@ namespace AlugaAi.Data
             var builder = new DbContextOptionsBuilder<AlugaAiDbContext>();
 
             // Try common environment variables, otherwise fall back to a local default connection string
-            var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__Supabase")
-                ?? Environment.GetEnvironmentVariable("SUPABASE_CONNECTION")
-                ?? "Host=localhost;Database=alugaai;Username=postgres;Password=postgres";
+            var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+                ?? "Data Source=alugaai.db";
 
-            builder.UseNpgsql(connectionString);
+            builder.UseSqlite(connectionString);
 
             return new AlugaAiDbContext(builder.Options);
         }

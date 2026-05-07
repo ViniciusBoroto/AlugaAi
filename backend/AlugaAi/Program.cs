@@ -14,6 +14,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -46,7 +58,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 builder.Services.AddDbContext<AlugaAiDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Supabase")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("Jwt:Key is not configured.");
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]
@@ -89,6 +101,9 @@ builder.Services.AddScoped<IReviewService, ReviewService>();
 
 var app = builder.Build();
 
+// Use CORS
+app.UseCors("AllowFrontend");
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -103,9 +118,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Apply EF Core migrations at startup (will attempt to connect using the configured connection string or
-// environment variables used by the DesignTimeDbContextFactory). Wrap in try/catch to avoid crashing the app
-// when the database is not available in the current environment.
+// Apply EF Core migrations at startup
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -120,7 +133,7 @@ using (var scope = app.Services.CreateScope())
         var logger = loggerFactory?.CreateLogger("DatabaseMigrations");
         if (logger != null)
         {
-            logger.LogError(ex, "An error occurred while migrating the database. Ensure the database is available and the connection string is correct.");
+            logger.LogError(ex, "An error occurred while migrating the database.");
         }
     }
 }

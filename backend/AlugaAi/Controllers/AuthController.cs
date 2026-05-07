@@ -31,6 +31,34 @@ namespace AlugaAi.Controllers
             return Ok(response);
         }
 
+        [HttpPost("register/renter")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RegisterRenter(CreateRenterInputModel request)
+        {
+            var response = await _service.RegisterRenterAsync(request);
+
+            if (response is null)
+            {
+                return BadRequest("User already exists or invalid data.");
+            }
+
+            return CreatedAtAction(nameof(Me), response);
+        }
+
+        [HttpPost("register/store")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RegisterStore(CreateStoreInputModel request)
+        {
+            var response = await _service.RegisterStoreAsync(request);
+
+            if (response is null)
+            {
+                return BadRequest("User already exists or invalid data.");
+            }
+
+            return CreatedAtAction(nameof(Me), response);
+        }
+
         [HttpGet("me")]
         [Authorize]
         public async Task<IActionResult> Me()

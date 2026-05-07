@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AlugaAi.Data;
+using AlugaAi.Entities;
 using AlugaAi.DTOs.InputModels;
 using AlugaAi.DTOs.ViewModels;
 using AlugaAi.Interfaces;
@@ -16,15 +17,21 @@ namespace AlugaAi.Services
         private readonly AlugaAiDbContext _context;
         private readonly IPasswordHasher<string> _passwordHasher;
         private readonly IConfiguration _configuration;
+        private readonly IRenterRepository _renterRepository;
+        private readonly IStoreRepository _storeRepository;
 
         public AuthService(
             AlugaAiDbContext context,
             IPasswordHasher<string> passwordHasher,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IRenterRepository renterRepository,
+            IStoreRepository storeRepository)
         {
             _context = context;
             _passwordHasher = passwordHasher;
             _configuration = configuration;
+            _renterRepository = renterRepository;
+            _storeRepository = storeRepository;
         }
 
         public async Task<AuthResponseViewModel?> LoginAsync(LoginInputModel request)
@@ -50,6 +57,37 @@ namespace AlugaAi.Services
                 return null;
             }
 
+            return GenerateAuthResponse(user);
+        }
+
+        public async Task<AuthResponseViewModel?> RegisterRenterAsync(CreateRenterInputModel request)
+        {
+            var userExists = await _context.Users.AnyAsync(u => u.Email == request.Email);
+            if (userExists) return null;
+
+            var hashedPassword = _passwordHasher.HashPassword(request.Email, request.Password);
+            var renterVM = await _renterRepository.CreateRenterAsync(request, hashedPassword);
+            
+            // Fetch the created user to generate response
+            var user = await _context.Users.FirstAsync(u => u.Email == request.Email);
+            return GenerateAuthResponse(user);
+        }
+
+        public async Task<AuthResponseViewModel?> RegisterStoreAsync(CreateStoreInputModel request)
+        {
+            var userExists = await _context.Users.AnyAsync(u => u.Email == request.Email);
+            if (userExists) return null;
+
+            var hashedPassword = _passwordHasher.HashPassword(request.Email, request.Password);
+            var storeVM = await _storeRepository.CreateStoreAsync(request, hashedPassword);
+            
+            // Fetch the created user to generate response
+            var user = await _context.Users.FirstAsync(u => u.Email == request.Email);
+            return GenerateAuthResponse(user);
+        }
+
+        public AuthResponseViewModel GenerateAuthResponse(User user)
+        {
             var token = GenerateToken(user.Id, user.Email, user.Role.ToString(), out var expiresAt);
 
             return new AuthResponseViewModel(
