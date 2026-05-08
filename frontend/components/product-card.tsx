@@ -25,12 +25,12 @@ export function ProductCard({
 }: ProductCardProps) {
   return (
     <Card className="relative mx-auto w-full max-w-sm pt-0">
-      <div className="absolute inset-0 z-30 aspect-video bg-black/35" />
       <img
         src={image}
         alt={title}
         className="relative z-20 aspect-video h-full object-contain"
       />
+      <div className="absolute inset-0 z-30 aspect-video" />
       <CardHeader>
         <CardAction>
           <Badge variant="secondary">{category}</Badge>
