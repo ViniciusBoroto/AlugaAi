@@ -1,8 +1,8 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, CalendarDays, Star } from "lucide-react"
+import { ArrowLeft, Star } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
+import { RentalDatePicker } from "@/components/rental-date-picker"
 import { products } from "@/lib/products"
 
 const rentalSteps = [
@@ -83,25 +83,7 @@ export default async function RentProductPage({ params }: RentProductPageProps) 
           </div>
         </section>
 
-        <section className="rounded-xl border border-[#FDEE44]/70 bg-zinc-900/95 p-4 sm:p-5">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-sm text-zinc-400">Preco por dia</p>
-              <p className="mt-1 text-3xl leading-none font-semibold">
-                R$ {product.price}
-                <span className="ml-1 text-sm font-medium text-zinc-300">/dia</span>
-              </p>
-            </div>
-            <CalendarDays className="size-5 text-[#FDEE44]" />
-          </div>
-
-          <Button
-            size="lg"
-            className="mt-5 h-11 w-full rounded-lg bg-[#FDEE44] text-sm font-semibold text-zinc-950 hover:bg-[#F6E542]"
-          >
-            Alugar Agora
-          </Button>
-        </section>
+        <RentalDatePicker pricePerDay={product.price} />
 
         <section className="rounded-xl border border-[#FDEE44]/35 bg-gradient-to-r from-[#FDEE44]/16 via-[#FDEE44]/8 to-transparent p-4 sm:p-5">
           <h2 className="text-base font-semibold text-zinc-100">Como funciona</h2>
