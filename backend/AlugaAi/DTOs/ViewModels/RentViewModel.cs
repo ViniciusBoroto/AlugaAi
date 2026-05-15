@@ -1,4 +1,6 @@
-﻿namespace AlugaAi.DTOs.ViewModels
+﻿using AlugaAi.Entities;
+
+namespace AlugaAi.DTOs.ViewModels
 {
     public record RentViewModel(
         Guid Id,
@@ -6,6 +8,7 @@
         DateTime ReturnDate,
         DateTime? DeliveredAt,
         DateTime? ReturnedAt,
+        RentStatus Status,
         Guid ProductId,
         string ProductName,
         Guid RenterId,

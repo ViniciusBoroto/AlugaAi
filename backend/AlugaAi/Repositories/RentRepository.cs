@@ -89,6 +89,49 @@ namespace AlugaAi.Repositories
             return ToViewModel(rent);
         }
 
+        public async Task<RentStatusUpdateResult?> UpdateStatusAsync(Guid id, UpdateRentStatusInputModel request)
+        {
+            var rent = await _context.Rents
+                .Include(r => r.Product)
+                .Include(r => r.Renter)
+                    .ThenInclude(renter => renter.User)
+                .FirstOrDefaultAsync(r => r.Id == id && r.RemovedAt == null);
+
+            if (rent is null)
+            {
+                return null;
+            }
+
+            var occurredAt = request.OccurredAt ?? DateTime.UtcNow;
+
+            switch (request.Status)
+            {
+                case RentStatus.Pending:
+                    rent.DeliveredAt = null;
+                    rent.ReturnedAt = null;
+                    break;
+                case RentStatus.Delivered:
+                    rent.DeliveredAt = occurredAt;
+                    rent.ReturnedAt = null;
+                    break;
+                case RentStatus.Returned:
+                    rent.DeliveredAt ??= occurredAt;
+                    rent.ReturnedAt = occurredAt;
+                    break;
+                default:
+                    throw new ArgumentException("Invalid rent status.");
+            }
+
+            await _context.SaveChangesAsync();
+
+            return new RentStatusUpdateResult(
+                ToViewModel(rent),
+                request.Status,
+                rent.Renter.User.Email,
+                rent.Renter.Name,
+                rent.Product.Name);
+        }
+
         public async Task<bool> DeleteAsync(Guid id)
         {
             var rent = await _context.Rents
@@ -113,10 +156,26 @@ namespace AlugaAi.Repositories
                 rent.ReturnDate,
                 rent.DeliveredAt,
                 rent.ReturnedAt,
+                GetStatus(rent),
                 rent.ProductId,
                 rent.Product.Name,
                 rent.RenterId,
                 rent.Renter.Name);
+        }
+
+        private static RentStatus GetStatus(Rent rent)
+        {
+            if (rent.ReturnedAt is not null)
+            {
+                return RentStatus.Returned;
+            }
+
+            if (rent.DeliveredAt is not null)
+            {
+                return RentStatus.Delivered;
+            }
+
+            return RentStatus.Pending;
         }
     }
 }

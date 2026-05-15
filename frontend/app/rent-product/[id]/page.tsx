@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, Star } from "lucide-react"
+import { ArrowLeft, CalendarDays, MapPin, Star } from "lucide-react"
 
 import { RentalDatePicker } from "@/components/rental-date-picker"
 import { products } from "@/lib/products"
@@ -86,8 +86,8 @@ export default async function RentProductPage({
           </div>
 
           <div className="mt-4 flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Categoria:</span>
-            <span className="inline-flex rounded-full border bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
+            <span className="text-sm text-zinc-400">Categoria:</span>
+            <span className="inline-flex rounded-full border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-100">
               {product.category}
             </span>
           </div>

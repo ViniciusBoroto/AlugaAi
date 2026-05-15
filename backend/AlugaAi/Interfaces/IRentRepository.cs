@@ -9,6 +9,7 @@ namespace AlugaAi.Interfaces
         Task<List<RentViewModel>> GetAllAsync();
         Task<RentViewModel?> GetByIdAsync(Guid id);
         Task<RentViewModel?> UpdateAsync(Guid id, UpdateRentInputModel request);
+        Task<RentStatusUpdateResult?> UpdateStatusAsync(Guid id, UpdateRentStatusInputModel request);
         Task<bool> DeleteAsync(Guid id);
     }
 }
