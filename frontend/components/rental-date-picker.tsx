@@ -122,7 +122,7 @@ export function RentalDatePicker({ pricePerDay }: RentalDatePickerProps) {
         </div>
 
         <div className="rounded-xl border bg-background p-4">
-          <h2 className="text-base font-semibold">Periodo do aluguel</h2>
+          <h2 className="text-base font-semibold">Período do aluguel</h2>
 
           <div className="mt-4 grid grid-cols-2 gap-3">
             <div className="rounded-lg border bg-card p-3">
@@ -132,7 +132,7 @@ export function RentalDatePicker({ pricePerDay }: RentalDatePickerProps) {
               </p>
             </div>
             <div className="rounded-lg border bg-card p-3">
-              <p className="text-xs text-muted-foreground">Devolucao</p>
+              <p className="text-xs text-muted-foreground">Devolucão</p>
               <p className="mt-1 text-sm font-semibold">
                 {formatDate(range?.to ?? range?.from)}
               </p>
