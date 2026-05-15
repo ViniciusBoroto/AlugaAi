@@ -40,6 +40,7 @@ namespace AlugaAi.Repositories
             return _context.Products
                 .AsNoTracking()
                 .Include(p => p.Category)
+                .Include(p => p.Store)
                 .Where(p => p.RemovedAt == null)
                 .OrderBy(p => p.Name)
                 .Select(p => ToViewModel(p))
@@ -51,6 +52,7 @@ namespace AlugaAi.Repositories
             return await _context.Products
                 .AsNoTracking()
                 .Include(p => p.Category)
+                .Include(p => p.Store)
                 .Where(p => p.Id == id && p.RemovedAt == null)
                 .Select(p => ToViewModel(p))
                 .FirstOrDefaultAsync();
@@ -97,7 +99,8 @@ namespace AlugaAi.Repositories
                 p.PhotoUrl,
                 p.CategoryId,
                 p.StoreId,
-                p.Category?.Name ?? string.Empty
+                p.Category?.Name ?? string.Empty,
+                p.Store?.Adress ?? string.Empty
             );
         }
     }

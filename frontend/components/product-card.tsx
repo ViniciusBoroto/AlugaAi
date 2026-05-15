@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Star } from "lucide-react"
+import { MapPin, Star } from "lucide-react"
 import Link from "next/link"
 import type { Product } from "@/lib/products"
 
@@ -22,6 +22,7 @@ export function ProductCard({
   category = "Construção",
   rating = 4.8,
   reviewsCount = 123,
+  location = "São Paulo, SP",
 }: ProductCardProps) {
   return (
     <Card className="relative mx-auto w-full max-w-sm pt-0">
@@ -50,6 +51,10 @@ export function ProductCard({
                 </span>
               ) : null}
             </span>
+          </div>
+          <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+            <MapPin className="h-3 w-3" />
+            <span>{location}</span>
           </div>
         </CardDescription>
         <div>

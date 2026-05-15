@@ -7,6 +7,7 @@ export type Product = {
   category: string
   rating: number
   reviewsCount: number
+  location: string
 }
 
 export const products: Product[] = [
@@ -20,6 +21,7 @@ export const products: Product[] = [
     category: "Construção",
     rating: 4.9,
     reviewsCount: 312,
+    location: "São Paulo, SP",
   },
   {
     id: "betoneira-120l",
@@ -31,6 +33,7 @@ export const products: Product[] = [
     category: "Construção",
     rating: 4.7,
     reviewsCount: 87,
+    location: "Campinas, SP",
   },
   {
     id: "serra-circular",
@@ -42,6 +45,7 @@ export const products: Product[] = [
     category: "Construção",
     rating: 4.6,
     reviewsCount: 204,
+    location: "Curitiba, PR",
   },
   {
     id: "cortador-grama",
@@ -53,6 +57,7 @@ export const products: Product[] = [
     category: "Jardinagem",
     rating: 4.8,
     reviewsCount: 156,
+    location: "Porto Alegre, RS",
   },
   {
     id: "motosserra-16",
@@ -64,6 +69,7 @@ export const products: Product[] = [
     category: "Jardinagem",
     rating: 4.5,
     reviewsCount: 98,
+    location: "Belo Horizonte, MG",
   },
   {
     id: "esmerilhadeira-angular",
@@ -75,5 +81,6 @@ export const products: Product[] = [
     category: "Construção",
     rating: 4.7,
     reviewsCount: 431,
+    location: "São Paulo, SP",
   },
 ]

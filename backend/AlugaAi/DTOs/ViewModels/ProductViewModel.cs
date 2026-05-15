@@ -8,6 +8,7 @@ namespace AlugaAi.DTOs.ViewModels
         string PhotoUrl,
         Guid CategoryId,
         Guid StoreId,
-        string CategoryName
+        string CategoryName,
+        string StoreAddress
     );
 }
