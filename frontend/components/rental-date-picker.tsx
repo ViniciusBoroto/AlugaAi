@@ -6,8 +6,11 @@ import type { DateRange } from "react-day-picker"
 
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
+import { createRent, getRenters } from "@/lib/domain-api"
+import { useAuth } from "@/hooks/use-auth"
 
 type RentalDatePickerProps = {
+  productId: string
   pricePerDay: number
 }
 
@@ -39,9 +42,19 @@ function getRentalDays(range?: DateRange) {
   )
 }
 
-export function RentalDatePicker({ pricePerDay }: RentalDatePickerProps) {
+function sameEmail(left: string, right: string) {
+  return left.trim().toLowerCase() === right.trim().toLowerCase()
+}
+
+export function RentalDatePicker({
+  productId,
+  pricePerDay,
+}: RentalDatePickerProps) {
+  const { user } = useAuth()
   const [range, setRange] = useState<DateRange | undefined>()
   const [confirmationMessage, setConfirmationMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const today = useMemo(() => {
     const date = new Date()
@@ -53,16 +66,53 @@ export function RentalDatePicker({ pricePerDay }: RentalDatePickerProps) {
   const total = rentalDays * pricePerDay
   const canConfirm = Boolean(range?.from)
 
-  function handleConfirm() {
+  async function handleConfirm() {
     if (!range?.from) {
+      return
+    }
+
+    if (!user) {
+      setErrorMessage("Entre como cliente para concluir o aluguel.")
+      return
+    }
+
+    if (user.role !== "Renter") {
+      setErrorMessage("Contas de loja nao podem alugar produtos.")
       return
     }
 
     const returnDate = range.to ?? range.from
 
-    setConfirmationMessage(
-      `Alugado para o periodo de ${formatDate(range.from)} ate ${formatDate(returnDate)}.`
-    )
+    setIsSubmitting(true)
+    setErrorMessage("")
+    setConfirmationMessage("")
+
+    try {
+      const renters = await getRenters()
+      const renter = renters.find((item) => sameEmail(item.email, user.email))
+
+      if (!renter) {
+        setErrorMessage("Perfil de cliente nao encontrado para esta conta.")
+        return
+      }
+
+      await createRent({
+        rentalDate: range.from.toISOString(),
+        returnDate: returnDate.toISOString(),
+        productId,
+        renterId: renter.id,
+      })
+
+      setConfirmationMessage(
+        `Alugado para o periodo de ${formatDate(range.from)} ate ${formatDate(returnDate)}.`
+      )
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error ? err.message : "Nao foi possivel criar o aluguel."
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -151,12 +201,25 @@ export function RentalDatePicker({ pricePerDay }: RentalDatePickerProps) {
           <Button
             size="lg"
             className="mt-4 h-11 w-full rounded-lg bg-[#FDEE44] text-sm font-semibold text-zinc-950 hover:bg-[#F6E542]"
-            disabled={!canConfirm}
+            disabled={!canConfirm || isSubmitting}
             onClick={handleConfirm}
           >
             <CheckCircle2 className="size-4" />
-            {canConfirm ? "Alugar Agora" : "Escolha uma data"}
+            {isSubmitting
+              ? "Confirmando..."
+              : canConfirm
+                ? "Alugar Agora"
+                : "Escolha uma data"}
           </Button>
+
+          {errorMessage ? (
+            <div
+              role="alert"
+              className="mt-3 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+            >
+              {errorMessage}
+            </div>
+          ) : null}
 
           {confirmationMessage ? (
             <div

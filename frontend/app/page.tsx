@@ -1,21 +1,51 @@
-// page.tsx
 import { CategoryTile } from "@/components/home/category-tile"
-import { CarFront, Hammer, House, Leaf } from "lucide-react"
+import { CarFront, Hammer, House, Leaf, Package, type LucideIcon } from "lucide-react"
 import { ProductCard } from "@/components/product-card"
-import { products } from "@/lib/products"
+import { products as mockProducts } from "@/lib/products"
+import { getCategories, getProducts, type Category } from "@/lib/domain-api"
 import Navbar from "@/components/navbar"
 
-const categories = [
+const fallbackCategories = [
   { title: "Construção", items: 7, icon: Hammer },
   { title: "Jardinagem", items: 4, icon: Leaf },
   { title: "Doméstica", items: 4, icon: House },
   { title: "Automotivo", items: 4, icon: CarFront },
 ]
 
-export default function Page() {
+function getCategoryIcon(name: string): LucideIcon {
+  const normalized = name.toLowerCase()
+
+  if (normalized.includes("constru")) return Hammer
+  if (normalized.includes("jardin")) return Leaf
+  if (normalized.includes("dom")) return House
+  if (normalized.includes("auto")) return CarFront
+
+  return Package
+}
+
+function buildCategories(categories: Category[], products: Awaited<ReturnType<typeof getProducts>>) {
+  if (categories.length === 0) {
+    return fallbackCategories
+  }
+
+  return categories.map((category) => ({
+    title: category.name,
+    items: products.filter((product) => product.categoryId === category.id).length,
+    icon: getCategoryIcon(category.name),
+  }))
+}
+
+export default async function Page() {
+  const [apiProducts, apiCategories] = await Promise.all([
+    getProducts().catch(() => []),
+    getCategories().catch(() => []),
+  ])
+  const products = apiProducts.length > 0 ? apiProducts : mockProducts
+  const categories = buildCategories(apiCategories, apiProducts)
+
   return (
     <main className="min-h-svh bg-background">
-      <Navbar></Navbar>
+      <Navbar />
 
       <div className="mx-auto w-full max-w-7xl px-4 pt-8 pb-10 sm:px-6 lg:px-8">
         <section className="pt-8">

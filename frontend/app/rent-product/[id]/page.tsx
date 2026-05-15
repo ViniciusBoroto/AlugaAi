@@ -1,9 +1,10 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, CalendarDays, MapPin, Star } from "lucide-react"
+import { ArrowLeft, Star } from "lucide-react"
 
 import { RentalDatePicker } from "@/components/rental-date-picker"
-import { products } from "@/lib/products"
+import { products as mockProducts } from "@/lib/products"
+import { getProducts } from "@/lib/domain-api"
 
 const rentalSteps = [
   "Selecione as datas de retirada e devolucao",
@@ -16,11 +17,36 @@ type RentProductPageProps = {
   params: Promise<{ id: string }>
 }
 
+type DisplayProduct = {
+  id: string
+  title: string
+  description: string
+  price: number
+  image: string
+  category: string
+  rating: number
+  reviewsCount: number
+}
+
 export default async function RentProductPage({
   params,
 }: RentProductPageProps) {
   const { id } = await params
-  const product = products.find((item) => item.id === id)
+  const apiProducts = await getProducts().catch(() => [])
+  const apiProduct = apiProducts.find((item) => item.id === id)
+  const mockProduct = mockProducts.find((item) => item.id === id)
+  const product: DisplayProduct | undefined = apiProduct
+    ? {
+        id: apiProduct.id,
+        title: apiProduct.name,
+        description: apiProduct.description,
+        price: apiProduct.pricePerDay,
+        image: apiProduct.photoUrl,
+        category: apiProduct.categoryName,
+        rating: 0,
+        reviewsCount: 0,
+      }
+    : mockProduct
 
   if (!product) {
     notFound()
@@ -86,14 +112,14 @@ export default async function RentProductPage({
           </div>
 
           <div className="mt-4 flex items-center gap-2">
-            <span className="text-sm text-zinc-400">Categoria:</span>
-            <span className="inline-flex rounded-full border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-100">
+            <span className="text-sm text-muted-foreground">Categoria:</span>
+            <span className="inline-flex rounded-full border bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
               {product.category}
             </span>
           </div>
         </section>
 
-        <RentalDatePicker pricePerDay={product.price} />
+        <RentalDatePicker productId={product.id} pricePerDay={product.price} />
 
         <section className="rounded-xl border border-[#d6bf1f]/35 bg-gradient-to-r from-[#FDEE44]/20 via-[#FDEE44]/8 to-transparent p-4 sm:p-5 dark:border-[#FDEE44]/35">
           <h2 className="text-base font-semibold">Como funciona</h2>

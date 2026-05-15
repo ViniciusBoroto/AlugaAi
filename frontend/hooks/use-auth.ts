@@ -4,25 +4,25 @@ import { useState, useEffect, useCallback } from "react"
 import { fetchApi } from "@/lib/api"
 import { useRouter } from "next/navigation"
 
-interface User {
-  id: string
+export interface User {
+  userId: string
   email: string
-  role: string
+  role: "Renter" | "Store" | string
 }
 
-interface AuthResponse {
+export interface AuthResponse {
   token: string
   expiresAt: string
   userId: string
   role: string
 }
 
-interface LoginCredentials {
+export interface LoginCredentials {
   email: string
   password: string
 }
 
-interface RegisterRenterData {
+export interface RegisterRenterData {
   name: string
   cpf: string
   email: string
@@ -30,7 +30,7 @@ interface RegisterRenterData {
   password: string
 }
 
-interface RegisterStoreData {
+export interface RegisterStoreData {
   fantasyName: string
   cnpj: string
   adress: string
