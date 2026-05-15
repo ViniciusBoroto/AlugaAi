@@ -1,88 +1,111 @@
-"use client";
+"use client"
 
-import { useState, useEffect, useCallback } from "react";
-import { fetchApi } from "@/lib/api";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react"
+import { fetchApi } from "@/lib/api"
+import { useRouter } from "next/navigation"
 
 interface User {
-  id: string;
-  email: string;
-  role: string;
+  id: string
+  email: string
+  role: string
 }
 
 interface AuthResponse {
-  token: string;
-  expiresAt: string;
-  userId: string;
-  role: string;
+  token: string
+  expiresAt: string
+  userId: string
+  role: string
+}
+
+interface LoginCredentials {
+  email: string
+  password: string
+}
+
+interface RegisterRenterData {
+  name: string
+  cpf: string
+  email: string
+  phoneNumber: string
+  password: string
+}
+
+interface RegisterStoreData {
+  fantasyName: string
+  cnpj: string
+  adress: string
+  cep: string
+  phoneNumber: string
+  email: string
+  password: string
 }
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   const fetchUser = useCallback(async () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token")
     if (!token) {
-      setLoading(false);
-      return;
+      setLoading(false)
+      return
     }
 
     try {
-      const userData = await fetchApi("/Auth/me");
-      setUser(userData);
+      const userData: User = await fetchApi("/Auth/me")
+      setUser(userData)
     } catch (error) {
-      console.error("Failed to fetch user", error);
-      localStorage.removeItem("token");
-      setUser(null);
+      console.error("Failed to fetch user", error)
+      localStorage.removeItem("token")
+      setUser(null)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+    fetchUser()
+  }, [fetchUser])
 
-  const login = async (credentials: any) => {
+  const login = async (credentials: LoginCredentials) => {
     const data: AuthResponse = await fetchApi("/Auth/login", {
       method: "POST",
       body: JSON.stringify(credentials),
-    });
+    })
 
-    localStorage.setItem("token", data.token);
-    await fetchUser();
-    router.push("/");
-  };
+    localStorage.setItem("token", data.token)
+    await fetchUser()
+    router.push("/")
+  }
 
-  const registerRenter = async (data: any) => {
+  const registerRenter = async (data: RegisterRenterData) => {
     const response: AuthResponse = await fetchApi("/Auth/register/renter", {
       method: "POST",
       body: JSON.stringify(data),
-    });
+    })
 
-    localStorage.setItem("token", response.token);
-    await fetchUser();
-    router.push("/");
-  };
+    localStorage.setItem("token", response.token)
+    await fetchUser()
+    router.push("/")
+  }
 
-  const registerStore = async (data: any) => {
+  const registerStore = async (data: RegisterStoreData) => {
     const response: AuthResponse = await fetchApi("/Auth/register/store", {
       method: "POST",
       body: JSON.stringify(data),
-    });
+    })
 
-    localStorage.setItem("token", response.token);
-    await fetchUser();
-    router.push("/");
-  };
+    localStorage.setItem("token", response.token)
+    await fetchUser()
+    router.push("/")
+  }
 
   const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    router.push("/login");
-  };
+    localStorage.removeItem("token")
+    setUser(null)
+    router.push("/login")
+  }
 
   return {
     user,
@@ -91,5 +114,5 @@ export function useAuth() {
     registerRenter,
     registerStore,
     logout,
-  };
+  }
 }

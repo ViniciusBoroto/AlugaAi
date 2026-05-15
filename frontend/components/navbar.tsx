@@ -2,6 +2,7 @@
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Search, User } from "lucide-react"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function Navbar() {
   return (
@@ -10,9 +11,17 @@ export default function Navbar() {
       {/* Linha superior: título e ícone */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">AlugaAi</h1>
-        <Link href="/login">
-          <User className="h-6 w-6 cursor-pointer" />
-        </Link>
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <Link
+            href="/login"
+            className="inline-flex size-8 items-center justify-center rounded-lg transition-colors hover:bg-muted"
+            aria-label="Entrar"
+            title="Entrar"
+          >
+            <User className="size-5" />
+          </Link>
+        </div>
       </div>
 
       {/* Input de busca com lupa */}

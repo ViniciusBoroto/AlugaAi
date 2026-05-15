@@ -39,9 +39,7 @@ function getRentalDays(range?: DateRange) {
   )
 }
 
-export function RentalDatePicker({
-  pricePerDay,
-}: RentalDatePickerProps) {
+export function RentalDatePicker({ pricePerDay }: RentalDatePickerProps) {
   const [range, setRange] = useState<DateRange | undefined>()
   const [confirmationMessage, setConfirmationMessage] = useState("")
 
@@ -68,20 +66,22 @@ export function RentalDatePicker({
   }
 
   return (
-    <section className="rounded-xl border border-[#FDEE44]/70 bg-zinc-900/95 p-4 sm:p-5">
+    <section className="rounded-xl border border-[#d6bf1f]/45 bg-card p-4 text-card-foreground sm:p-5 dark:border-[#FDEE44]/70">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-zinc-400">Preco por dia</p>
+          <p className="text-sm text-muted-foreground">Preco por dia</p>
           <p className="mt-1 text-3xl leading-none font-semibold">
             {currencyFormatter.format(pricePerDay)}
-            <span className="ml-1 text-sm font-medium text-zinc-300">/dia</span>
+            <span className="ml-1 text-sm font-medium text-muted-foreground">
+              /dia
+            </span>
           </p>
         </div>
-        <CalendarDays className="size-5 text-[#FDEE44]" />
+        <CalendarDays className="size-5 text-[#9a8700] dark:text-[#FDEE44]" />
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_0.8fr] lg:items-start">
-        <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-2">
+        <div className="overflow-hidden rounded-xl border bg-background p-2">
           <Calendar
             mode="range"
             selected={range}
@@ -90,19 +90,22 @@ export function RentalDatePicker({
             numberOfMonths={1}
             weekStartsOn={0}
             captionLayout="label"
-            className="dark mx-auto w-full max-w-sm bg-transparent text-zinc-100 [--cell-size:2.45rem]"
+            className="mx-auto w-full max-w-sm bg-transparent [--cell-size:2.45rem]"
             classNames={{
               root: "w-full",
               month: "w-full",
               table: "w-full",
-              caption_label: "text-sm font-semibold text-zinc-100",
-              weekday: "text-xs text-zinc-500",
-              today: "rounded-md bg-zinc-800 text-zinc-100",
-              outside: "text-zinc-700",
-              disabled: "text-zinc-700 opacity-40",
-              range_start: "bg-[#FDEE44]/20",
-              range_middle: "bg-[#FDEE44]/10 text-zinc-100",
-              range_end: "bg-[#FDEE44]/20",
+              caption_label: "text-sm font-semibold text-foreground",
+              weekday: "text-xs text-muted-foreground",
+              today: "rounded-md bg-muted text-foreground",
+              outside: "text-muted-foreground/50",
+              disabled: "text-muted-foreground/40 opacity-50",
+              range_start:
+                "bg-[#FDEE44]/45 text-foreground dark:bg-[#FDEE44]/20",
+              range_middle:
+                "bg-[#FDEE44]/25 text-foreground dark:bg-[#FDEE44]/10",
+              range_end:
+                "bg-[#FDEE44]/45 text-foreground dark:bg-[#FDEE44]/20",
             }}
             formatters={{
               formatCaption: (date) =>
@@ -118,21 +121,19 @@ export function RentalDatePicker({
           />
         </div>
 
-        <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-4">
-          <h2 className="text-base font-semibold text-zinc-100">
-            Periodo do aluguel
-          </h2>
+        <div className="rounded-xl border bg-background p-4">
+          <h2 className="text-base font-semibold">Periodo do aluguel</h2>
 
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-3">
-              <p className="text-xs text-zinc-500">Retirada</p>
-              <p className="mt-1 text-sm font-semibold text-zinc-100">
+            <div className="rounded-lg border bg-card p-3">
+              <p className="text-xs text-muted-foreground">Retirada</p>
+              <p className="mt-1 text-sm font-semibold">
                 {formatDate(range?.from)}
               </p>
             </div>
-            <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-3">
-              <p className="text-xs text-zinc-500">Devolucao</p>
-              <p className="mt-1 text-sm font-semibold text-zinc-100">
+            <div className="rounded-lg border bg-card p-3">
+              <p className="text-xs text-muted-foreground">Devolucao</p>
+              <p className="mt-1 text-sm font-semibold">
                 {formatDate(range?.to ?? range?.from)}
               </p>
             </div>
@@ -140,12 +141,10 @@ export function RentalDatePicker({
 
           <div className="mt-4 rounded-lg border border-[#FDEE44]/25 bg-[#FDEE44]/10 p-3">
             <div className="flex items-center justify-between gap-3 text-sm">
-              <span className="text-zinc-300">
+              <span className="text-muted-foreground">
                 {rentalDays || 0} {rentalDays === 1 ? "dia" : "dias"}
               </span>
-              <span className="font-semibold text-zinc-100">
-                {currencyFormatter.format(total)}
-              </span>
+              <span className="font-semibold">{currencyFormatter.format(total)}</span>
             </div>
           </div>
 
@@ -163,7 +162,7 @@ export function RentalDatePicker({
             <div
               role="status"
               aria-live="polite"
-              className="mt-3 rounded-lg border border-emerald-400/40 bg-emerald-400/10 p-3 text-sm font-medium text-emerald-200"
+              className="mt-3 rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm font-medium text-emerald-700 dark:text-emerald-200"
             >
               {confirmationMessage}
             </div>

@@ -16,7 +16,9 @@ type RentProductPageProps = {
   params: Promise<{ id: string }>
 }
 
-export default async function RentProductPage({ params }: RentProductPageProps) {
+export default async function RentProductPage({
+  params,
+}: RentProductPageProps) {
   const { id } = await params
   const product = products.find((item) => item.id === id)
 
@@ -27,17 +29,17 @@ export default async function RentProductPage({ params }: RentProductPageProps) 
   const filledStars = Math.floor(product.rating)
 
   return (
-    <main className="min-h-svh bg-[radial-gradient(circle_at_top,_#1f1f22_0%,_#09090b_65%)] text-zinc-100">
+    <main className="min-h-svh bg-background text-foreground">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6 sm:px-6 sm:py-8">
         <Link
           href="/"
-          className="inline-flex w-fit items-center gap-2 text-sm text-zinc-400 transition-colors hover:text-zinc-100"
+          className="inline-flex w-fit items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
           Voltar
         </Link>
 
-        <section className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
+        <section className="overflow-hidden rounded-xl border bg-card">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={product.image}
@@ -46,8 +48,10 @@ export default async function RentProductPage({ params }: RentProductPageProps) 
           />
         </section>
 
-        <section className="rounded-xl border border-zinc-700/80 bg-zinc-900/90 p-4 sm:p-5">
-          <h1 className="text-2xl leading-tight font-semibold">{product.title}</h1>
+        <section className="rounded-xl border bg-card p-4 text-card-foreground sm:p-5">
+          <h1 className="text-2xl leading-tight font-semibold">
+            {product.title}
+          </h1>
 
           <div className="mt-3 flex items-center gap-2">
             <div className="flex items-center gap-0.5">
@@ -66,18 +70,24 @@ export default async function RentProductPage({ params }: RentProductPageProps) 
                 )
               })}
             </div>
-            <span className="text-sm font-medium">{product.rating.toFixed(1)}</span>
-            <span className="text-sm text-zinc-400">({product.reviewsCount} avaliacoes)</span>
+            <span className="text-sm font-medium">
+              {product.rating.toFixed(1)}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              ({product.reviewsCount} avaliacoes)
+            </span>
           </div>
 
           <div className="mt-4 space-y-2">
-            <p className="text-sm font-semibold text-zinc-200">Descricao</p>
-            <p className="text-sm leading-relaxed text-zinc-300">{product.description}</p>
+            <p className="text-sm font-semibold">Descricao</p>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {product.description}
+            </p>
           </div>
 
           <div className="mt-4 flex items-center gap-2">
-            <span className="text-sm text-zinc-400">Categoria:</span>
-            <span className="inline-flex rounded-full border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-100">
+            <span className="text-sm text-muted-foreground">Categoria:</span>
+            <span className="inline-flex rounded-full border bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
               {product.category}
             </span>
           </div>
@@ -85,12 +95,14 @@ export default async function RentProductPage({ params }: RentProductPageProps) 
 
         <RentalDatePicker pricePerDay={product.price} />
 
-        <section className="rounded-xl border border-[#FDEE44]/35 bg-gradient-to-r from-[#FDEE44]/16 via-[#FDEE44]/8 to-transparent p-4 sm:p-5">
-          <h2 className="text-base font-semibold text-zinc-100">Como funciona</h2>
-          <ol className="mt-3 space-y-2 text-sm text-zinc-200">
+        <section className="rounded-xl border border-[#d6bf1f]/35 bg-gradient-to-r from-[#FDEE44]/20 via-[#FDEE44]/8 to-transparent p-4 sm:p-5 dark:border-[#FDEE44]/35">
+          <h2 className="text-base font-semibold">Como funciona</h2>
+          <ol className="mt-3 space-y-2 text-sm text-muted-foreground">
             {rentalSteps.map((step, index) => (
               <li key={step} className="flex gap-2.5">
-                <span className="font-semibold text-[#FDEE44]">{index + 1}.</span>
+                <span className="font-semibold text-[#9a8700] dark:text-[#FDEE44]">
+                  {index + 1}.
+                </span>
                 <span>{step}</span>
               </li>
             ))}

@@ -15,16 +15,12 @@ const categories = [
 export default function Page() {
   return (
     <main className="min-h-svh bg-background">
-             
       <Navbar></Navbar>
-      
 
-       <div  className="mx-auto w-full max-w-7xl px-4 pt-8 pb-10 sm:px-6 lg:px-8">
-       
-
+      <div className="mx-auto w-full max-w-7xl px-4 pt-8 pb-10 sm:px-6 lg:px-8">
         <section className="pt-8">
           <h2 className="text-3xl font-semibold tracking-tight">Categorias</h2>
-          <div className="mt-5 grid grid-cols-4 gap-4 ">
+          <div className="mt-5 grid grid-cols-4 gap-4">
             {categories.map((category) => (
               <CategoryTile key={category.title} {...category} />
             ))}
@@ -36,7 +32,9 @@ export default function Page() {
             <h2 className="text-3xl font-semibold tracking-tight">
               Todas as Ferramentas
             </h2>
-            <p className="text-lg text-muted-foreground">{products.length} itens</p>
+            <p className="text-lg text-muted-foreground">
+              {products.length} itens
+            </p>
           </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -45,7 +43,7 @@ export default function Page() {
             ))}
           </div>
         </section>
-     </div> 
+      </div>
     </main>
   )
 }

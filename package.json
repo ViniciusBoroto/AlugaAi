@@ -11,5 +11,8 @@
     "lint": "npm run lint --workspace frontend",
     "typecheck": "npm run typecheck --workspace frontend",
     "format": "npm run format --workspace frontend"
+  },
+  "optionalDependencies": {
+    "@tailwindcss/oxide-darwin-arm64": "4.2.2"
   }
 }
