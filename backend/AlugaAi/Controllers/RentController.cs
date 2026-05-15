@@ -73,6 +73,33 @@ namespace AlugaAi.Controllers
             }
         }
 
+        [HttpPatch("{id:guid}/status")]
+        public async Task<IActionResult> UpdateStatus(Guid id, UpdateRentStatusInputModel request)
+        {
+            try
+            {
+                var rent = await _service.UpdateStatusAsync(id, request);
+                if (rent is null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(rent);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while updating the rent status.");
+            }
+        }
+
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
