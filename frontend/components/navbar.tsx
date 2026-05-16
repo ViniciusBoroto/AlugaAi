@@ -1,5 +1,6 @@
 "use client"
 
+import { type ChangeEvent, useEffect, useState } from "react"
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -8,10 +9,26 @@ import { LogOut, Search, User } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/hooks/use-auth"
 
-export default function Navbar() {
+type NavbarProps = {
+  searchQuery?: string
+  onSearch?: (query: string) => void
+}
+
+export default function Navbar({ searchQuery = "", onSearch }: NavbarProps) {
   const { user, loading, logout } = useAuth()
   const isStore = user?.role === "Store"
   const isRenter = user?.role === "Renter"
+  const [query, setQuery] = useState(searchQuery)
+
+  useEffect(() => {
+    setQuery(searchQuery)
+  }, [searchQuery])
+
+  function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
+    const value = event.target.value
+    setQuery(value)
+    onSearch?.(value)
+  }
 
   return (
     <nav className="sticky top-0 z-50 flex w-full flex-col gap-3 border-b bg-background px-4 py-4 shadow-md/20 shadow-secondary-foreground sm:px-6 lg:px-24">
@@ -69,6 +86,8 @@ export default function Navbar() {
         <Search className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
         <Input
           type="text"
+          value={query}
+          onChange={handleSearchChange}
           placeholder="Buscar ferramentas..."
           className="h-12 pl-10"
         />

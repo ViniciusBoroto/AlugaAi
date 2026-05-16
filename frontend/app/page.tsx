@@ -61,6 +61,13 @@ function getProductCategory(product: CatalogProduct) {
   return product.categoryName || product.category || "Sem categoria"
 }
 
+function normalizeText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+}
+
 function buildCategories(categories: Category[]) {
   if (categories.length === 0) {
     return fallbackCategories
@@ -77,6 +84,7 @@ export default function Page() {
   const [categories, setCategories] =
     useState<DisplayCategory[]>(fallbackCategories)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     async function loadCatalog() {
@@ -105,17 +113,38 @@ export default function Page() {
     [products]
   )
 
-  const filteredProducts = selectedCategory
-    ? products.filter((product) => getProductCategory(product) === selectedCategory)
-    : products
+  const filteredProducts = useMemo(() => {
+    const normalizedQuery = normalizeText(searchQuery.trim())
+    const categoryFiltered = selectedCategory
+      ? products.filter((product) => getProductCategory(product) === selectedCategory)
+      : products
 
-  const productsTitle = selectedCategory
+    if (!normalizedQuery) {
+      return categoryFiltered
+    }
+
+    return categoryFiltered.filter((product) => {
+      const title = normalizeText(product.title || product.name || "")
+      const description = normalizeText(product.description)
+      const category = normalizeText(getProductCategory(product))
+
+      return (
+        title.includes(normalizedQuery) ||
+        description.includes(normalizedQuery) ||
+        category.includes(normalizedQuery)
+      )
+    })
+  }, [products, selectedCategory, searchQuery])
+
+  const productsTitle = searchQuery
+    ? `Resultados para "${searchQuery}"`
+    : selectedCategory
     ? `Ferramentas de ${selectedCategory}`
     : "Todas as Ferramentas"
 
   return (
     <main className="min-h-svh bg-background">
-      <Navbar />
+      <Navbar searchQuery={searchQuery} onSearch={setSearchQuery} />
 
       <div className="mx-auto w-full max-w-7xl px-4 pt-8 pb-10 sm:px-6 lg:px-8">
         <section className="pt-8">
