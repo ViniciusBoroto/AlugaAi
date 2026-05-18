@@ -1,5 +1,6 @@
 "use client"
 
+import { type ChangeEvent, useEffect, useState } from "react"
 import Link from "next/link"
 import {
   ClipboardList,
@@ -15,10 +16,26 @@ import { Input } from "@/components/ui/input"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/hooks/use-auth"
 
-export default function Navbar() {
+type NavbarProps = {
+  searchQuery?: string
+  onSearch?: (query: string) => void
+}
+
+export default function Navbar({ searchQuery = "", onSearch }: NavbarProps) {
   const { user, loading, logout } = useAuth()
   const isStore = user?.role === "Store"
   const isRenter = user?.role === "Renter"
+  const [query, setQuery] = useState(searchQuery)
+
+  useEffect(() => {
+    setQuery(searchQuery)
+  }, [searchQuery])
+
+  function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
+    const value = event.target.value
+    setQuery(value)
+    onSearch?.(value)
+  }
 
   return (
     <nav className="sticky top-0 z-50 border-b border-primary/15 bg-background/88 backdrop-blur-md">
@@ -33,6 +50,8 @@ export default function Navbar() {
           <Input
             type="text"
             placeholder="Buscar ferramentas..."
+            value={query}
+            onChange={handleSearchChange}
             className="h-10 rounded-full border-primary/10 bg-card/70 pl-9 shadow-none"
           />
         </div>
@@ -87,6 +106,17 @@ export default function Navbar() {
             </Button>
           )}
         </div>
+      </div>
+
+      <div className="relative sm:hidden">
+        <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          type="text"
+          value={query}
+          onChange={handleSearchChange}
+          placeholder="Buscar ferramentas..."
+          className="h-10 rounded-full border-primary/10 bg-card/70 pl-9 shadow-none"
+        />
       </div>
     </nav>
   )
