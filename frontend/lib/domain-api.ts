@@ -5,6 +5,10 @@ export type Category = {
   name: string
 }
 
+export type CategoryPayload = {
+  categoryName: string
+}
+
 export type Product = {
   id: string
   name: string
@@ -64,6 +68,13 @@ export type Store = {
 
 export async function getCategories() {
   return fetchApi("/Category") as Promise<Category[]>
+}
+
+export async function createCategory(payload: CategoryPayload) {
+  return fetchApi("/Category", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  }) as Promise<Category>
 }
 
 export async function getProducts() {

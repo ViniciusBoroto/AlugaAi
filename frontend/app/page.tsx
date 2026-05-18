@@ -120,7 +120,7 @@ export default function Page() {
       <div className="mx-auto w-full max-w-7xl px-4 pt-8 pb-10 sm:px-6 lg:px-8">
         <section className="pt-8">
           <h2 className="text-3xl font-semibold tracking-tight">Categorias</h2>
-          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
             <CategoryTile
               icon={Boxes}
               title="Todas"

@@ -42,11 +42,11 @@ export function LoginForm({
 
   return (
     <div
-      className={cn("flex w-full max-w-md flex-col gap-4", className)}
+      className={cn("flex w-full max-w-[25rem] flex-col gap-3", className)}
       {...props}
     >
-      <Card className="rounded-2xl">
-        <CardContent className="pt-6">
+      <Card className="rounded-[1.5rem]">
+        <CardContent className="px-5 py-5">
           <form onSubmit={handleSubmit}>
             <FieldGroup>
               <Field>
@@ -55,6 +55,7 @@ export function LoginForm({
                   id="email"
                   type="email"
                   placeholder="seu@email.com"
+                  className="h-12 rounded-xl"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -66,16 +67,25 @@ export function LoginForm({
                 <Input
                   id="password"
                   type="password"
+                  className="h-12 rounded-xl"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </Field>
 
-              {error && <p className="text-sm text-destructive">{error}</p>}
+              {error && (
+                <p className="rounded-2xl border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
+                  {error}
+                </p>
+              )}
 
               <Field>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  className="h-12 w-full rounded-xl"
+                  disabled={isLoading}
+                >
                   {isLoading ? "Entrando..." : "Entrar"}
                 </Button>
                 <Button

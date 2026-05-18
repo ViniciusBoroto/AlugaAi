@@ -76,17 +76,17 @@ export function SignupForm({
 
   return (
     <div
-      className={cn("flex w-full max-w-md flex-col gap-4", className)}
+      className={cn("flex w-full max-w-2xl flex-col gap-3", className)}
       {...props}
     >
-      <Card className="rounded-2xl">
-        <CardContent className="pt-6">
-          <div className="mb-6 grid w-full grid-cols-2 rounded-md bg-muted p-1">
+      <Card className="rounded-[1.5rem]">
+        <CardContent className="px-5 py-5">
+          <div className="mb-5 grid w-full grid-cols-2 rounded-xl bg-muted p-1">
             <button
               className={cn(
-                "rounded-sm py-1.5 text-sm font-medium transition-all",
+                "rounded-lg py-2 text-sm font-semibold transition-all",
                 activeTab === "renter"
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-card text-primary shadow-sm"
                   : "text-muted-foreground"
               )}
               onClick={() => setActiveTab("renter")}
@@ -95,9 +95,9 @@ export function SignupForm({
             </button>
             <button
               className={cn(
-                "rounded-sm py-1.5 text-sm font-medium transition-all",
+                "rounded-lg py-2 text-sm font-semibold transition-all",
                 activeTab === "store"
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-card text-primary shadow-sm"
                   : "text-muted-foreground"
               )}
               onClick={() => setActiveTab("store")}
@@ -108,11 +108,12 @@ export function SignupForm({
 
           {activeTab === "renter" ? (
             <form onSubmit={handleRenterSubmit}>
-              <FieldGroup>
+              <FieldGroup className="grid gap-4 sm:grid-cols-2">
                 <Field>
                   <FieldLabel htmlFor="renter-name">Nome Completo</FieldLabel>
                   <Input
                     id="renter-name"
+                    className="h-11 rounded-xl"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
@@ -122,6 +123,7 @@ export function SignupForm({
                   <FieldLabel htmlFor="renter-cpf">CPF</FieldLabel>
                   <Input
                     id="renter-cpf"
+                    className="h-11 rounded-xl"
                     value={cpf}
                     onChange={(e) => setCpf(e.target.value)}
                     required
@@ -132,6 +134,7 @@ export function SignupForm({
                   <Input
                     id="renter-email"
                     type="email"
+                    className="h-11 rounded-xl"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -141,36 +144,47 @@ export function SignupForm({
                   <FieldLabel htmlFor="renter-phone">Telefone</FieldLabel>
                   <Input
                     id="renter-phone"
+                    className="h-11 rounded-xl"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     required
                   />
                 </Field>
-                <Field>
+                <Field className="sm:col-span-2">
                   <FieldLabel htmlFor="renter-password">Senha</FieldLabel>
                   <Input
                     id="renter-password"
                     type="password"
+                    className="h-11 rounded-xl"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
                 </Field>
 
-                {error && <p className="text-sm text-destructive">{error}</p>}
+                {error && (
+                  <p className="rounded-xl border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive sm:col-span-2">
+                    {error}
+                  </p>
+                )}
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  className="h-11 w-full rounded-xl sm:col-span-2"
+                  disabled={isLoading}
+                >
                   {isLoading ? "Criando conta..." : "Criar conta Locador"}
                 </Button>
               </FieldGroup>
             </form>
           ) : (
             <form onSubmit={handleStoreSubmit}>
-              <FieldGroup>
+              <FieldGroup className="grid gap-4 sm:grid-cols-2">
                 <Field>
                   <FieldLabel htmlFor="store-name">Nome da Loja</FieldLabel>
                   <Input
                     id="store-name"
+                    className="h-11 rounded-xl"
                     value={fantasyName}
                     onChange={(e) => setFantasyName(e.target.value)}
                     required
@@ -180,15 +194,17 @@ export function SignupForm({
                   <FieldLabel htmlFor="store-cnpj">CNPJ</FieldLabel>
                   <Input
                     id="store-cnpj"
+                    className="h-11 rounded-xl"
                     value={cnpj}
                     onChange={(e) => setCnpj(e.target.value)}
                     required
                   />
                 </Field>
-                <Field>
+                <Field className="sm:col-span-2">
                   <FieldLabel htmlFor="store-address">Endereço</FieldLabel>
                   <Input
                     id="store-address"
+                    className="h-11 rounded-xl"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     required
@@ -198,6 +214,7 @@ export function SignupForm({
                   <FieldLabel htmlFor="store-cep">CEP</FieldLabel>
                   <Input
                     id="store-cep"
+                    className="h-11 rounded-xl"
                     value={cep}
                     onChange={(e) => setCep(e.target.value)}
                     required
@@ -208,6 +225,7 @@ export function SignupForm({
                   <Input
                     id="store-email"
                     type="email"
+                    className="h-11 rounded-xl"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -217,25 +235,35 @@ export function SignupForm({
                   <FieldLabel htmlFor="store-phone">Telefone</FieldLabel>
                   <Input
                     id="store-phone"
+                    className="h-11 rounded-xl"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     required
                   />
                 </Field>
-                <Field>
+                <Field className="sm:col-span-2">
                   <FieldLabel htmlFor="store-password">Senha</FieldLabel>
                   <Input
                     id="store-password"
                     type="password"
+                    className="h-11 rounded-xl"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
                 </Field>
 
-                {error && <p className="text-sm text-destructive">{error}</p>}
+                {error && (
+                  <p className="rounded-xl border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive sm:col-span-2">
+                    {error}
+                  </p>
+                )}
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  className="h-11 w-full rounded-xl sm:col-span-2"
+                  disabled={isLoading}
+                >
                   {isLoading ? "Criando conta..." : "Criar conta Loja"}
                 </Button>
               </FieldGroup>

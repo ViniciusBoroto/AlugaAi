@@ -1,8 +1,9 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, Star } from "lucide-react"
+import { ArrowLeft, CheckCircle2, Star } from "lucide-react"
 
 import { RentalDatePicker } from "@/components/rental-date-picker"
+import Navbar from "@/components/navbar"
 import { products as mockProducts } from "@/lib/products"
 import { getProducts } from "@/lib/domain-api"
 
@@ -53,10 +54,13 @@ export default async function RentProductPage({
   }
 
   const filledStars = Math.floor(product.rating)
+  const hasReviews = product.reviewsCount > 0
 
   return (
     <main className="min-h-svh bg-background text-foreground">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6 sm:px-6 sm:py-8">
+      <Navbar />
+
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5 sm:px-6 lg:px-8">
         <Link
           href="/"
           className="inline-flex w-fit items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -65,75 +69,98 @@ export default async function RentProductPage({
           Voltar
         </Link>
 
-        <section className="overflow-hidden rounded-xl border bg-card">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={product.image}
-            alt={product.title}
-            className="h-56 w-full object-cover sm:h-72 md:h-96"
-          />
-        </section>
-
-        <section className="rounded-xl border bg-card p-4 text-card-foreground sm:p-5">
-          <h1 className="text-2xl leading-tight font-semibold">
-            {product.title}
-          </h1>
-
-          <div className="mt-3 flex items-center gap-2">
-            <div className="flex items-center gap-0.5">
-              {Array.from({ length: 5 }, (_, index) => {
-                const starPosition = index + 1
-                const isFilled = starPosition <= filledStars
-
-                return (
-                  <Star
-                    key={starPosition}
-                    className="size-3.5"
-                    color={isFilled ? "#FDEE44" : "#71717A"}
-                    fill={isFilled ? "#FDEE44" : "transparent"}
-                    strokeWidth={1.8}
-                  />
-                )
-              })}
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start">
+          <div className="min-w-0">
+            <div className="overflow-hidden rounded-xl border bg-card">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={product.image}
+                alt={product.title}
+                className="aspect-[4/3] w-full object-cover sm:aspect-[16/10]"
+              />
             </div>
-            <span className="text-sm font-medium">
-              {product.rating.toFixed(1)}
-            </span>
-            <span className="text-sm text-muted-foreground">
-              ({product.reviewsCount} avaliacoes)
-            </span>
+
+            <section className="mt-5 border-b pb-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="inline-flex rounded-md bg-primary/15 px-2.5 py-1 text-xs font-semibold text-foreground">
+                    {product.category || "Produto"}
+                  </span>
+                  <h1 className="mt-3 text-2xl leading-tight font-semibold tracking-tight sm:text-3xl">
+                    {product.title}
+                  </h1>
+                </div>
+                <div className="rounded-lg border bg-card px-3 py-2 text-right">
+                  <p className="text-xs text-muted-foreground">Diaria</p>
+                  <p className="font-semibold">
+                    {new Intl.NumberFormat("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    }).format(product.price)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {hasReviews ? (
+                  <>
+                    <div className="flex items-center gap-0.5">
+                      {Array.from({ length: 5 }, (_, index) => {
+                        const starPosition = index + 1
+                        const isFilled = starPosition <= filledStars
+
+                        return (
+                          <Star
+                            key={starPosition}
+                            color="currentColor"
+                            fill={isFilled ? "currentColor" : "transparent"}
+                            strokeWidth={1.8}
+                            className={
+                              isFilled
+                                ? "size-3.5 text-primary"
+                                : "size-3.5 text-muted-foreground"
+                            }
+                          />
+                        )
+                      })}
+                    </div>
+                    <span className="text-sm font-medium">
+                      {product.rating.toFixed(1)}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      ({product.reviewsCount} avaliacoes)
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-sm text-muted-foreground">
+                    Novo no catalogo
+                  </span>
+                )}
+              </div>
+
+              <p className="mt-5 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+                {product.description}
+              </p>
+            </section>
+
+            <section className="mt-5">
+              <h2 className="text-base font-semibold">Como funciona</h2>
+              <ol className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+                {rentalSteps.map((step) => (
+                  <li key={step} className="flex gap-2">
+                    <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </section>
           </div>
 
-          <div className="mt-4 space-y-2">
-            <p className="text-sm font-semibold">Descricao</p>
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              {product.description}
-            </p>
-          </div>
-
-          <div className="mt-4 flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Categoria:</span>
-            <span className="inline-flex rounded-full border bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
-              {product.category}
-            </span>
-          </div>
-        </section>
-
-        <RentalDatePicker productId={product.id} pricePerDay={product.price} />
-
-        <section className="rounded-xl border border-[#d6bf1f]/35 bg-gradient-to-r from-[#FDEE44]/20 via-[#FDEE44]/8 to-transparent p-4 sm:p-5 dark:border-[#FDEE44]/35">
-          <h2 className="text-base font-semibold">Como funciona</h2>
-          <ol className="mt-3 space-y-2 text-sm text-muted-foreground">
-            {rentalSteps.map((step, index) => (
-              <li key={step} className="flex gap-2.5">
-                <span className="font-semibold text-[#9a8700] dark:text-[#FDEE44]">
-                  {index + 1}.
-                </span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ol>
-        </section>
+          <RentalDatePicker
+            productId={product.id}
+            pricePerDay={product.price}
+          />
+        </div>
       </div>
     </main>
   )
