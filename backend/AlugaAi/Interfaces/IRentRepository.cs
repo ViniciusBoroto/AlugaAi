@@ -6,6 +6,7 @@ namespace AlugaAi.Interfaces
     public interface IRentRepository
     {
         Task<RentViewModel> CreateAsync(CreateRentInputModel request);
+        Task<List<RentViewModel>> CreateManyAsync(IEnumerable<CreateRentInputModel> requests);
         Task<List<RentViewModel>> GetAllAsync();
         Task<RentViewModel?> GetByIdAsync(Guid id);
         Task<RentViewModel?> UpdateAsync(Guid id, UpdateRentInputModel request);

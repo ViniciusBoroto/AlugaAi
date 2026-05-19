@@ -14,6 +14,24 @@ namespace AlugaAi.Controllers
         {
             _service = service;
         }
+        [HttpPost("batch")]
+        public async Task<IActionResult> CreateMany(IEnumerable<CreateRentInputModel> request)
+        {
+            try
+            {
+                var rents = await _service.CreateManyAsync(request);
+                return Ok(rents);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while creating the rents.");
+            }
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateRentInputModel request)

@@ -27,6 +27,29 @@ namespace AlugaAi.Services
             return await _repository.CreateAsync(request);
         }
 
+        public async Task<List<RentViewModel>> CreateManyAsync(IEnumerable<CreateRentInputModel> requests)
+        {
+            var requestList = requests.ToList();
+            if (!requestList.Any())
+            {
+                return new List<RentViewModel>();
+            }
+
+            foreach (var req in requestList)
+            {
+                if (req.RentalDate >= req.ReturnDate)
+                {
+                    throw new ArgumentException("ReturnDate must be after RentalDate.");
+                }
+            }
+
+            var created = await _repository.CreateManyAsync(requestList);
+
+            // Optionally, could send emails here. Keeping behavior minimal for now.
+
+            return created;
+        }
+
         public Task<List<RentViewModel>> GetAllAsync()
         {
             return _repository.GetAllAsync();

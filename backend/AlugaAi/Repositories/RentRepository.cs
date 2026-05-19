@@ -38,6 +38,33 @@ namespace AlugaAi.Repositories
             return ToViewModel(created);
         }
 
+        public async Task<List<RentViewModel>> CreateManyAsync(IEnumerable<CreateRentInputModel> requests)
+        {
+            var rents = requests.Select(request => new Rent
+            {
+                Id = Guid.NewGuid(),
+                RentalDate = request.RentalDate,
+                ReturnDate = request.ReturnDate,
+                ProductId = request.ProductId,
+                RenterId = request.RenterId
+            }).ToList();
+
+            _context.Rents.AddRange(rents);
+            await _context.SaveChangesAsync();
+
+            var ids = rents.Select(r => r.Id).ToList();
+
+            var created = await _context.Rents
+                .AsNoTracking()
+                .Include(r => r.Product)
+                .Include(r => r.Renter)
+                .Where(r => ids.Contains(r.Id))
+                .OrderBy(r => r.RentalDate)
+                .ToListAsync();
+
+            return created.Select(r => ToViewModel(r)).ToList();
+        }
+
         public async Task<List<RentViewModel>> GetAllAsync()
         {
             return await _context.Rents
