@@ -14,12 +14,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { getRenters, getStores, type Renter, type Store } from "@/lib/domain-api"
+import {
+  getRenterById,
+  getStoreById,
+  type Renter,
+  type Store,
+} from "@/lib/domain-api"
 import { useAuth } from "@/hooks/use-auth"
-
-function sameEmail(left: string, right: string) {
-  return left.trim().toLowerCase() === right.trim().toLowerCase()
-}
 
 export default function AccountPage() {
   const { user, loading, logout } = useAuth()
@@ -39,20 +40,17 @@ export default function AccountPage() {
       setError(null)
 
       try {
-        if (currentUser.role === "Store") {
-          const stores = await getStores()
-          setProfile(
-            stores.find((store) => sameEmail(store.email, currentUser.email)) ??
-              null
-          )
+        if (currentUser.role === "Store" && currentUser.storeId) {
+          setProfile(await getStoreById(currentUser.storeId))
           return
         }
 
-        const renters = await getRenters()
-        setProfile(
-          renters.find((renter) => sameEmail(renter.email, currentUser.email)) ??
-            null
-        )
+        if (currentUser.role === "Renter" && currentUser.renterId) {
+          setProfile(await getRenterById(currentUser.renterId))
+          return
+        }
+
+        setProfile(null)
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Nao foi possivel carregar a conta."

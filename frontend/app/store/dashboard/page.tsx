@@ -36,9 +36,9 @@ import {
   createProduct,
   deleteProduct,
   getCategories,
-  getProducts,
-  getRents,
-  getStores,
+  getProductsByStore,
+  getRentsByStore,
+  getStoreById,
   updateProduct,
   type Category,
   type Product,
@@ -73,10 +73,6 @@ const emptyForm: ProductFormState = {
   pricePerDay: "",
   photoUrl: "",
   categoryId: "",
-}
-
-function sameEmail(left: string, right: string) {
-  return left.trim().toLowerCase() === right.trim().toLowerCase()
 }
 
 function formatDate(value: string) {
@@ -152,7 +148,7 @@ export default function StoreDashboardPage() {
   const [success, setSuccess] = useState<string | null>(null)
 
   async function loadDashboard() {
-    if (!user || user.role !== "Store") {
+    if (!user || user.role !== "Store" || !user.storeId) {
       return
     }
 
@@ -160,24 +156,18 @@ export default function StoreDashboardPage() {
     setError(null)
 
     try {
-      const [stores, allCategories, allProducts, allRents] = await Promise.all([
-        getStores(),
+      const [currentStore, allCategories, allProducts, allRents] = await Promise.all([
+        getStoreById(user.storeId),
         getCategories(),
-        getProducts(),
-        getRents(),
+        getProductsByStore(user.storeId),
+        getRentsByStore(user.storeId),
       ])
 
       const sortedCategories = sortCategories(allCategories)
-      const currentStore =
-        stores.find((item) => sameEmail(item.email, user.email)) ?? null
 
       setStore(currentStore)
       setCategories(sortedCategories)
-      setProducts(
-        currentStore
-          ? allProducts.filter((product) => product.storeId === currentStore.id)
-          : []
-      )
+      setProducts(allProducts)
       setRents(allRents)
 
       setForm((current) => ({

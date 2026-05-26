@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import {
-  getRenters,
+  getRenterById,
   getRents,
   type Rent,
   type Renter,
@@ -32,10 +32,6 @@ function formatDate(value: string) {
   return dateFormatter.format(new Date(value))
 }
 
-function sameEmail(left: string, right: string) {
-  return left.trim().toLowerCase() === right.trim().toLowerCase()
-}
-
 export default function MyRentalsPage() {
   const { user, loading } = useAuth()
   const [renter, setRenter] = useState<Renter | null>(null)
@@ -48,24 +44,26 @@ export default function MyRentalsPage() {
       return
     }
 
+    if (!user.renterId) {
+      setError("Perfil de cliente nao encontrado para esta conta.")
+      return
+    }
+
     const currentUser = user
+    const renterId = user.renterId
 
     async function loadRentals() {
       setIsLoadingData(true)
       setError(null)
 
       try {
-        const [renters, allRents] = await Promise.all([getRenters(), getRents()])
-        const currentRenter =
-          renters.find((item) => sameEmail(item.email, currentUser.email)) ??
-          null
+        const [currentRenter, allRents] = await Promise.all([
+          getRenterById(renterId),
+          getRents(),
+        ])
 
         setRenter(currentRenter)
-        setRents(
-          currentRenter
-            ? allRents.filter((rent) => rent.renterId === currentRenter.id)
-            : []
-        )
+        setRents(allRents.filter((rent) => rent.renterId === currentRenter.id))
       } catch (err) {
         setError(
           err instanceof Error

@@ -9,10 +9,21 @@ import {
 } from "@/components/ui/card"
 import { MapPin, Star } from "lucide-react"
 import Link from "next/link"
-import type { Product } from "@/lib/products"
 import type { Product as ApiProduct } from "@/lib/domain-api"
 
-type ProductCardProps = Partial<Product & ApiProduct> & { id?: string }
+type CatalogProduct = {
+  id: string
+  title: string
+  description: string
+  price: number
+  image: string
+  category: string
+  rating: number
+  reviewsCount: number
+  location: string
+}
+
+type ProductCardProps = Partial<CatalogProduct & ApiProduct> & { id?: string }
 
 export function ProductCard({
   id = "produto",

@@ -134,17 +134,19 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
-        var db = services.GetRequiredService<AlugaAi.Data.AlugaAiDbContext>();
+        var db = services.GetRequiredService<AlugaAiDbContext>();
+        var passwordHasher = services.GetRequiredService<IPasswordHasher<string>>();
+        var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("DatabaseStartup");
+
         db.Database.Migrate();
+        await DbSeeder.SeedAsync(db, passwordHasher, logger);
     }
     catch (Exception ex)
     {
         var loggerFactory = services.GetService(typeof(Microsoft.Extensions.Logging.ILoggerFactory)) as Microsoft.Extensions.Logging.ILoggerFactory;
         var logger = loggerFactory?.CreateLogger("DatabaseMigrations");
-        if (logger != null)
-        {
-            logger.LogError(ex, "An error occurred while migrating the database.");
-        }
+        logger?.LogError(ex, "An error occurred while preparing the database.");
     }
 }
 

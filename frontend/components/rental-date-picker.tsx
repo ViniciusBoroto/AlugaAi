@@ -6,7 +6,7 @@ import type { DateRange } from "react-day-picker"
 
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
-import { createRent, getRenters } from "@/lib/domain-api"
+import { createRent } from "@/lib/domain-api"
 import { useAuth } from "@/hooks/use-auth"
 
 type RentalDatePickerProps = {
@@ -40,10 +40,6 @@ function getRentalDays(range?: DateRange) {
     Math.round((endDate.getTime() - range.from.getTime()) / millisecondsInDay) +
     1
   )
-}
-
-function sameEmail(left: string, right: string) {
-  return left.trim().toLowerCase() === right.trim().toLowerCase()
 }
 
 export function RentalDatePicker({
@@ -81,6 +77,11 @@ export function RentalDatePicker({
       return
     }
 
+    if (!user.renterId) {
+      setErrorMessage("Perfil de cliente nao encontrado para esta conta.")
+      return
+    }
+
     const returnDate = range.to ?? range.from
 
     setIsSubmitting(true)
@@ -88,19 +89,11 @@ export function RentalDatePicker({
     setConfirmationMessage("")
 
     try {
-      const renters = await getRenters()
-      const renter = renters.find((item) => sameEmail(item.email, user.email))
-
-      if (!renter) {
-        setErrorMessage("Perfil de cliente nao encontrado para esta conta.")
-        return
-      }
-
       await createRent({
         rentalDate: range.from.toISOString(),
         returnDate: returnDate.toISOString(),
         productId,
-        renterId: renter.id,
+        renterId: user.renterId,
       })
 
       setConfirmationMessage(

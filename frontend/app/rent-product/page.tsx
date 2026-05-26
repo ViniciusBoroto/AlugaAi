@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation"
 
-import { products } from "@/lib/products"
+import { getProducts } from "@/lib/domain-api"
 
-export default function RentProductIndexPage() {
+export default async function RentProductIndexPage() {
+  const products = await getProducts().catch(() => [])
   const firstProduct = products[0]
 
   if (!firstProduct) {

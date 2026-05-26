@@ -81,6 +81,14 @@ export async function getProducts() {
   return fetchApi("/Product") as Promise<Product[]>
 }
 
+export async function getProductById(id: string) {
+  return fetchApi(`/Product/${id}`) as Promise<Product>
+}
+
+export async function getProductsByStore(storeId: string) {
+  return fetchApi(`/Product/store/${storeId}`) as Promise<Product[]>
+}
+
 export async function createProduct(payload: ProductPayload) {
   return fetchApi("/Product", {
     method: "POST",
@@ -105,6 +113,10 @@ export async function getRents() {
   return fetchApi("/Rent") as Promise<Rent[]>
 }
 
+export async function getRentsByStore(storeId: string) {
+  return fetchApi(`/Rent/store/${storeId}`) as Promise<Rent[]>
+}
+
 export async function createRent(payload: RentPayload) {
   return fetchApi("/Rent", {
     method: "POST",
@@ -116,6 +128,14 @@ export async function getRenters() {
   return fetchApi("/Renter") as Promise<Renter[]>
 }
 
+export async function getRenterById(id: string) {
+  return fetchApi(`/Renter/${id}`) as Promise<Renter>
+}
+
 export async function getStores() {
   return fetchApi("/Store") as Promise<Store[]>
+}
+
+export async function getStoreById(id: string) {
+  return fetchApi(`/Store/${id}`) as Promise<Store>
 }

@@ -27,9 +27,23 @@ export async function fetchApi(endpoint: string, options: RequestInit = {}) {
   }
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}))
+    const responseText = await response.text()
+    let errorMessage = ""
+
+    if (responseText) {
+      try {
+        const errorData = JSON.parse(responseText) as {
+          message?: string
+          title?: string
+        }
+        errorMessage = errorData.message || errorData.title || ""
+      } catch {
+        errorMessage = responseText
+      }
+    }
+
     throw new Error(
-      errorData.message || response.statusText || "Erro na requisição"
+      errorMessage || response.statusText || "Erro na requisição"
     )
   }
 

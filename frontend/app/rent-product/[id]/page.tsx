@@ -4,8 +4,7 @@ import { ArrowLeft, CheckCircle2, Star } from "lucide-react"
 
 import { RentalDatePicker } from "@/components/rental-date-picker"
 import Navbar from "@/components/navbar"
-import { products as mockProducts } from "@/lib/products"
-import { getProducts } from "@/lib/domain-api"
+import { getProductById } from "@/lib/domain-api"
 
 const rentalSteps = [
   "Selecione as datas de retirada e devolucao",
@@ -33,9 +32,7 @@ export default async function RentProductPage({
   params,
 }: RentProductPageProps) {
   const { id } = await params
-  const apiProducts = await getProducts().catch(() => [])
-  const apiProduct = apiProducts.find((item) => item.id === id)
-  const mockProduct = mockProducts.find((item) => item.id === id)
+  const apiProduct = await getProductById(id).catch(() => null)
   const product: DisplayProduct | undefined = apiProduct
     ? {
         id: apiProduct.id,
@@ -47,7 +44,7 @@ export default async function RentProductPage({
         rating: 0,
         reviewsCount: 0,
       }
-    : mockProduct
+    : undefined
 
   if (!product) {
     notFound()

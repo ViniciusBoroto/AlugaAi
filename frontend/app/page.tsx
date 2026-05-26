@@ -15,7 +15,6 @@ import { CategoryTile } from "@/components/home/category-tile"
 import Navbar from "@/components/navbar"
 import { ProductCard } from "@/components/product-card"
 import { getCategories, getProducts, type Category } from "@/lib/domain-api"
-import { products as mockProducts } from "@/lib/products"
 
 type CatalogProduct = {
   id: string
@@ -80,7 +79,7 @@ function buildCategories(categories: Category[]) {
 }
 
 export default function Page() {
-  const [products, setProducts] = useState<CatalogProduct[]>(mockProducts)
+  const [products, setProducts] = useState<CatalogProduct[]>([])
   const [categories, setCategories] =
     useState<DisplayCategory[]>(fallbackCategories)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -93,10 +92,7 @@ export default function Page() {
         getCategories().catch(() => []),
       ])
 
-      if (apiProducts.length > 0) {
-        setProducts(apiProducts)
-      }
-
+      setProducts(apiProducts)
       setCategories(buildCategories(apiCategories))
     }
 
