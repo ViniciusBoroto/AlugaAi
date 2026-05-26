@@ -55,6 +55,11 @@ namespace AlugaAi.Services
             return _repository.GetAllAsync();
         }
 
+        public Task<List<RentViewModel>> GetByStoreIdAsync(Guid storeId)
+        {
+            return _repository.GetByStoreIdAsync(storeId);
+        }
+
         public Task<RentViewModel?> GetByIdAsync(Guid id)
         {
             return _repository.GetByIdAsync(id);

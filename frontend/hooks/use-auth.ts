@@ -8,6 +8,8 @@ export interface User {
   userId: string
   email: string
   role: "Renter" | "Store" | string
+  storeId?: string
+  renterId?: string
 }
 
 export interface AuthResponse {

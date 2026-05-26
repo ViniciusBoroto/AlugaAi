@@ -105,7 +105,9 @@ namespace AlugaAi.Services
                 .Select(user => new CurrentUserViewModel(
                     user.Id,
                     user.Email,
-                    user.Role.ToString()))
+                    user.Role.ToString(),
+                    user.Store != null ? user.Store.Id : null,
+                    user.Renter != null ? user.Renter.Id : null))
                 .FirstOrDefaultAsync();
         }
 

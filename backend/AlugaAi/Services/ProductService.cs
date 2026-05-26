@@ -26,6 +26,8 @@ namespace AlugaAi.Services
 
         public Task<List<ProductViewModel>> GetAllAsync() => _repository.GetAllAsync();
 
+        public Task<List<ProductViewModel>> GetByStoreIdAsync(Guid storeId) => _repository.GetByStoreIdAsync(storeId);
+
         public Task<ProductViewModel?> GetByIdAsync(Guid id) => _repository.GetByIdAsync(id);
 
         public async Task<ProductViewModel?> UpdateAsync(Guid id, UpdateProductInputModel request)

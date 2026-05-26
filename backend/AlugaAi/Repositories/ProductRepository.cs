@@ -47,6 +47,18 @@ namespace AlugaAi.Repositories
                 .ToListAsync();
         }
 
+        public Task<List<ProductViewModel>> GetByStoreIdAsync(Guid storeId)
+        {
+            return _context.Products
+                .AsNoTracking()
+                .Include(p => p.Category)
+                .Include(p => p.Store)
+                .Where(p => p.StoreId == storeId && p.RemovedAt == null)
+                .OrderBy(p => p.Name)
+                .Select(p => ToViewModel(p))
+                .ToListAsync();
+        }
+
         public async Task<ProductViewModel?> GetByIdAsync(Guid id)
         {
             return await _context.Products
