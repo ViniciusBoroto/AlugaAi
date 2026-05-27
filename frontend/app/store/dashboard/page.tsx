@@ -40,10 +40,12 @@ import {
   getRentsByStore,
   getStoreById,
   updateProduct,
+  updateRentStatus,
   type Category,
   type Product,
   type ProductPayload,
   type Rent,
+  type RentStatus,
   type Store,
 } from "@/lib/domain-api"
 import { useAuth } from "@/hooks/use-auth"
@@ -121,15 +123,31 @@ function sortCategories(items: Category[]) {
 }
 
 function getRentStatus(rent: Rent, today: Date) {
-  if (rent.returnedAt) {
+  if (rent.status === "Returned" || rent.returnedAt) {
     return { label: "Devolvido", variant: "secondary" as const }
+  }
+
+  if (rent.status === "Delivered" || rent.deliveredAt) {
+    if (startOfDay(new Date(rent.returnDate)).getTime() < today.getTime()) {
+      return { label: "Atrasado", variant: "destructive" as const }
+    }
+
+    return { label: "Entregue", variant: "default" as const }
   }
 
   if (startOfDay(new Date(rent.returnDate)).getTime() < today.getTime()) {
     return { label: "Atrasado", variant: "destructive" as const }
   }
 
-  return { label: "Em aberto", variant: "default" as const }
+  return { label: "Pendente", variant: "outline" as const }
+}
+
+function getStatusSuccessMessage(status: RentStatus) {
+  return status === "Delivered"
+    ? "Pedido marcado como entregue."
+    : status === "Returned"
+      ? "Pedido marcado como devolvido."
+      : "Pedido voltou para pendente."
 }
 
 export default function StoreDashboardPage() {
@@ -144,6 +162,7 @@ export default function StoreDashboardPage() {
   const [isLoadingData, setIsLoadingData] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isCreatingCategory, setIsCreatingCategory] = useState(false)
+  const [updatingRentId, setUpdatingRentId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
@@ -212,7 +231,10 @@ export default function StoreDashboardPage() {
   const today = useMemo(() => startOfDay(new Date()), [])
 
   const activeRents = useMemo(
-    () => storeRents.filter((rent) => !rent.returnedAt),
+    () =>
+      storeRents.filter(
+        (rent) => rent.status !== "Returned" && !rent.returnedAt
+      ),
     [storeRents]
   )
 
@@ -514,6 +536,32 @@ export default function StoreDashboardPage() {
           ? err.message
           : "Nao foi possivel remover o produto."
       )
+    }
+  }
+
+  async function handleUpdateRentStatus(rent: Rent, status: RentStatus) {
+    setUpdatingRentId(rent.id)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      const updatedRent = await updateRentStatus(rent.id, {
+        status,
+        occurredAt: new Date().toISOString(),
+      })
+
+      setRents((current) =>
+        current.map((item) => (item.id === rent.id ? updatedRent : item))
+      )
+      setSuccess(getStatusSuccessMessage(status))
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Nao foi possivel atualizar o status do pedido."
+      )
+    } finally {
+      setUpdatingRentId(null)
     }
   }
 
@@ -1188,6 +1236,77 @@ export default function StoreDashboardPage() {
                               </p>
                               <p>{formatDate(rent.returnDate)}</p>
                             </div>
+                            {rent.deliveredAt ? (
+                              <div>
+                                <p className="text-xs text-muted-foreground">
+                                  Entregue em
+                                </p>
+                                <p>{formatDate(rent.deliveredAt)}</p>
+                              </div>
+                            ) : null}
+                            {rent.returnedAt ? (
+                              <div>
+                                <p className="text-xs text-muted-foreground">
+                                  Devolvido em
+                                </p>
+                                <p>{formatDate(rent.returnedAt)}</p>
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant={
+                                rent.status === "Delivered"
+                                  ? "secondary"
+                                  : "outline"
+                              }
+                              disabled={
+                                updatingRentId === rent.id ||
+                                rent.status === "Delivered"
+                              }
+                              onClick={() =>
+                                handleUpdateRentStatus(rent, "Delivered")
+                              }
+                            >
+                              {updatingRentId === rent.id
+                                ? "Atualizando..."
+                                : "Marcar entregue"}
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant={
+                                rent.status === "Returned"
+                                  ? "secondary"
+                                  : "outline"
+                              }
+                              disabled={
+                                updatingRentId === rent.id ||
+                                rent.status === "Returned"
+                              }
+                              onClick={() =>
+                                handleUpdateRentStatus(rent, "Returned")
+                              }
+                            >
+                              {updatingRentId === rent.id
+                                ? "Atualizando..."
+                                : "Marcar devolvido"}
+                            </Button>
+                            {(rent.deliveredAt || rent.returnedAt) ? (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                disabled={updatingRentId === rent.id}
+                                onClick={() =>
+                                  handleUpdateRentStatus(rent, "Pending")
+                                }
+                              >
+                                Voltar para pendente
+                              </Button>
+                            ) : null}
                           </div>
                         </div>
                       )

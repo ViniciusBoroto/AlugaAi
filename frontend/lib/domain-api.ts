@@ -35,17 +35,25 @@ export type Rent = {
   returnDate: string
   deliveredAt: string | null
   returnedAt: string | null
+  status: RentStatus
   productId: string
   productName: string
   renterId: string
   renterName: string
 }
 
+export type RentStatus = "Pending" | "Delivered" | "Returned"
+
 export type RentPayload = {
   rentalDate: string
   returnDate: string
   productId: string
   renterId: string
+}
+
+export type RentStatusPayload = {
+  status: RentStatus
+  occurredAt?: string | null
 }
 
 export type Renter = {
@@ -120,6 +128,13 @@ export async function getRentsByStore(storeId: string) {
 export async function createRent(payload: RentPayload) {
   return fetchApi("/Rent", {
     method: "POST",
+    body: JSON.stringify(payload),
+  }) as Promise<Rent>
+}
+
+export async function updateRentStatus(id: string, payload: RentStatusPayload) {
+  return fetchApi(`/Rent/${id}/status`, {
+    method: "PATCH",
     body: JSON.stringify(payload),
   }) as Promise<Rent>
 }

@@ -18,6 +18,7 @@ import {
   getRenterById,
   getRents,
   type Rent,
+  type RentStatus,
   type Renter,
 } from "@/lib/domain-api"
 import { useAuth } from "@/hooks/use-auth"
@@ -30,6 +31,14 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
 
 function formatDate(value: string) {
   return dateFormatter.format(new Date(value))
+}
+
+function getRentStatus(status: RentStatus) {
+  return status === "Returned"
+    ? { label: "Devolvido", variant: "secondary" as const }
+    : status === "Delivered"
+      ? { label: "Entregue", variant: "default" as const }
+      : { label: "Pendente", variant: "outline" as const }
 }
 
 export default function MyRentalsPage() {
@@ -49,7 +58,6 @@ export default function MyRentalsPage() {
       return
     }
 
-    const currentUser = user
     const renterId = user.renterId
 
     async function loadRentals() {
@@ -79,7 +87,9 @@ export default function MyRentalsPage() {
   }, [user])
 
   const activeRents = useMemo(
-    () => rents.filter((rent) => !rent.returnedAt).length,
+    () =>
+      rents.filter((rent) => rent.status !== "Returned" && !rent.returnedAt)
+        .length,
     [rents]
   )
 
@@ -185,44 +195,70 @@ export default function MyRentalsPage() {
               </Card>
             ) : (
               <div className="grid gap-3">
-                {rents.map((rent) => (
-                  <Card key={rent.id}>
-                    <CardHeader>
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <CardTitle className="flex items-center gap-2">
-                            <PackageCheck className="size-5" />
-                            {rent.productName}
-                          </CardTitle>
-                          <CardDescription>Pedido {rent.id}</CardDescription>
+                {rents.map((rent) => {
+                  const status = getRentStatus(rent.status)
+
+                  return (
+                    <Card key={rent.id}>
+                      <CardHeader>
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <CardTitle className="flex items-center gap-2">
+                              <PackageCheck className="size-5" />
+                              {rent.productName}
+                            </CardTitle>
+                            <CardDescription>Pedido {rent.id}</CardDescription>
+                          </div>
+                          <Badge variant={status.variant}>
+                            {status.label}
+                          </Badge>
                         </div>
-                        <Badge variant={rent.returnedAt ? "secondary" : "default"}>
-                          {rent.returnedAt ? "Devolvido" : "Em aberto"}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-lg border bg-muted/30 p-3">
-                        <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <CalendarDays className="size-3.5" />
-                          Retirada
-                        </p>
-                        <p className="mt-1 font-medium">
-                          {formatDate(rent.rentalDate)}
-                        </p>
-                      </div>
-                      <div className="rounded-lg border bg-muted/30 p-3">
-                        <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <CalendarDays className="size-3.5" />
-                          Devolucao
-                        </p>
-                        <p className="mt-1 font-medium">
-                          {formatDate(rent.returnDate)}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardHeader>
+                      <CardContent className="grid gap-3 sm:grid-cols-2">
+                        <div className="rounded-lg border bg-muted/30 p-3">
+                          <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <CalendarDays className="size-3.5" />
+                            Retirada
+                          </p>
+                          <p className="mt-1 font-medium">
+                            {formatDate(rent.rentalDate)}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border bg-muted/30 p-3">
+                          <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <CalendarDays className="size-3.5" />
+                            Devolucao
+                          </p>
+                          <p className="mt-1 font-medium">
+                            {formatDate(rent.returnDate)}
+                          </p>
+                        </div>
+                        {rent.deliveredAt ? (
+                          <div className="rounded-lg border bg-muted/30 p-3">
+                            <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <CalendarDays className="size-3.5" />
+                              Entregue em
+                            </p>
+                            <p className="mt-1 font-medium">
+                              {formatDate(rent.deliveredAt)}
+                            </p>
+                          </div>
+                        ) : null}
+                        {rent.returnedAt ? (
+                          <div className="rounded-lg border bg-muted/30 p-3">
+                            <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <CalendarDays className="size-3.5" />
+                              Devolvido em
+                            </p>
+                            <p className="mt-1 font-medium">
+                              {formatDate(rent.returnedAt)}
+                            </p>
+                          </div>
+                        ) : null}
+                      </CardContent>
+                    </Card>
+                  )
+                })}
               </div>
             )}
           </>
