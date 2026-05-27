@@ -51,6 +51,7 @@ export function RentalDatePicker({
   const [confirmationMessage, setConfirmationMessage] = useState("")
   const [errorMessage, setErrorMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showConfirmation, setShowConfirmation] = useState(false)
 
   const today = useMemo(() => {
     const date = new Date()
@@ -60,6 +61,7 @@ export function RentalDatePicker({
 
   const rentalDays = getRentalDays(range)
   const total = rentalDays * pricePerDay
+  const isStoreUser = user?.role === "Store"
   const canConfirm = Boolean(range?.from)
 
   async function handleConfirm() {
@@ -73,7 +75,6 @@ export function RentalDatePicker({
     }
 
     if (user.role !== "Renter") {
-      setErrorMessage("Contas de loja nao podem alugar produtos.")
       return
     }
 
@@ -87,6 +88,7 @@ export function RentalDatePicker({
     setIsSubmitting(true)
     setErrorMessage("")
     setConfirmationMessage("")
+    setShowConfirmation(false)
 
     try {
       await createRent({
@@ -99,6 +101,7 @@ export function RentalDatePicker({
       setConfirmationMessage(
         `Alugado para o periodo de ${formatDate(range.from)} ate ${formatDate(returnDate)}.`
       )
+      setShowConfirmation(true)
     } catch (err) {
       setErrorMessage(
         err instanceof Error ? err.message : "Nao foi possivel criar o aluguel."
@@ -189,17 +192,21 @@ export function RentalDatePicker({
 
         <Button
           size="lg"
-          className="mt-3 h-11 w-full rounded-lg"
-          disabled={!canConfirm || isSubmitting}
+          className="mt-3 h-11 w-full rounded-lg disabled:bg-muted disabled:text-muted-foreground disabled:border-input"
+          disabled={!canConfirm || isSubmitting || isStoreUser}
           onClick={handleConfirm}
         >
           <CheckCircle2 className="size-4" />
           {isSubmitting
             ? "Confirmando..."
-            : canConfirm
+            : isStoreUser
+              ? "Loja nao pode alugar"
+              : canConfirm
               ? "Confirmar aluguel"
               : "Selecione uma data"}
         </Button>
+
+        
 
         {errorMessage ? (
           <div
@@ -210,13 +217,27 @@ export function RentalDatePicker({
           </div>
         ) : null}
 
-        {confirmationMessage ? (
-          <div
-            role="status"
-            aria-live="polite"
-            className="mt-3 rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm font-medium text-emerald-700 dark:text-emerald-200"
-          >
-            {confirmationMessage}
+        {showConfirmation ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10 p-4 backdrop-blur-sm">
+            <div
+              role="status"
+              aria-live="polite"
+              className="w-full max-w-md rounded-3xl border border-border/50 bg-card p-6 text-sm font-medium text-foreground shadow-xl shadow-black/10"
+            >
+              <p className="text-base font-semibold text-foreground">
+                Aluguel feito com sucesso
+              </p>
+              <p className="mt-3 text-sm text-muted-foreground">
+                {confirmationMessage}
+              </p>
+              <Button
+                size="sm"
+                className="mt-5 w-full rounded-lg"
+                onClick={() => setShowConfirmation(false)}
+              >
+                OK
+              </Button>
+            </div>
           </div>
         ) : null}
       </div>
