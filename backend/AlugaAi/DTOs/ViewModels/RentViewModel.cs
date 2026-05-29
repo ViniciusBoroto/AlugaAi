@@ -12,6 +12,7 @@ namespace AlugaAi.DTOs.ViewModels
         Guid ProductId,
         string ProductName,
         Guid RenterId,
-        string RenterName
+        string RenterName,
+        int Quantity
     );
 }

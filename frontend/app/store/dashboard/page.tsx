@@ -93,6 +93,7 @@ type ProductFormState = {
   pricePerDay: string
   photoUrl: string
   categoryId: string
+  quantity: string
 }
 
 type DashboardMetric = {
@@ -109,6 +110,7 @@ const emptyForm: ProductFormState = {
   pricePerDay: "",
   photoUrl: "",
   categoryId: "",
+  quantity: "1",
 }
 
 function formatDate(value: string) {
@@ -416,7 +418,7 @@ export default function StoreDashboardPage() {
         return (
           total +
           getRentalDaysFromPeriod(rent.rentalDate, rent.returnDate) *
-            product.pricePerDay
+            product.pricePerDay * rent.quantity
         )
       }, 0),
     [productMap, storeRents]
@@ -441,7 +443,7 @@ export default function StoreDashboardPage() {
       return (
         total +
         getRentalDaysFromPeriod(rent.rentalDate, rent.returnDate) *
-          product.pricePerDay
+          product.pricePerDay * rent.quantity
       )
     }, 0)
   }, [productMap, storeRents, today])
@@ -485,7 +487,7 @@ export default function StoreDashboardPage() {
       current.count += 1
       current.revenue +=
         getRentalDaysFromPeriod(rent.rentalDate, rent.returnDate) *
-        product.pricePerDay
+        product.pricePerDay * rent.quantity
 
       stats.set(product.id, current)
     })
@@ -627,6 +629,7 @@ export default function StoreDashboardPage() {
       pricePerDay: String(product.pricePerDay),
       photoUrl: product.photoUrl,
       categoryId: product.categoryId,
+      quantity: String(product.quantity),
     })
     setSuccess(null)
     setError(null)
@@ -693,6 +696,7 @@ export default function StoreDashboardPage() {
     const trimmedName = form.name.trim()
     const trimmedDescription = form.description.trim()
     const trimmedPhotoUrl = form.photoUrl.trim()
+    const quantity = Number(form.quantity)
 
     if (!trimmedName) {
       setError("Informe o nome do produto.")
@@ -714,6 +718,11 @@ export default function StoreDashboardPage() {
       return
     }
 
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      setError("Informe uma quantidade em estoque maior que zero.")
+      return
+    }
+
     if (!isHttpUrl(trimmedPhotoUrl)) {
       setError("Informe uma URL de foto válida com http ou https.")
       return
@@ -726,6 +735,7 @@ export default function StoreDashboardPage() {
       photoUrl: trimmedPhotoUrl,
       categoryId: form.categoryId,
       storeId: store.id,
+      quantity,
     }
 
     setIsSubmitting(true)
@@ -1350,7 +1360,7 @@ export default function StoreDashboardPage() {
                       />
                     </div>
 
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-4 sm:grid-cols-3">
                       <div className="grid gap-2">
                         <Label htmlFor="price">Preço por dia</Label>
                         <Input
@@ -1363,6 +1373,22 @@ export default function StoreDashboardPage() {
                             updateForm("pricePerDay", event.target.value)
                           }
                           placeholder="89.90"
+                          required
+                        />
+                      </div>
+
+                      <div className="grid gap-2">
+                        <Label htmlFor="quantity">Estoque</Label>
+                        <Input
+                          id="quantity"
+                          type="number"
+                          min="1"
+                          step="1"
+                          value={form.quantity}
+                          onChange={(event) =>
+                            updateForm("quantity", event.target.value)
+                          }
+                          placeholder="10"
                           required
                         />
                       </div>
@@ -1512,6 +1538,9 @@ export default function StoreDashboardPage() {
                                 <span className="text-xs text-muted-foreground">
                                   /dia
                                 </span>
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Estoque: {product.quantity} unidade{product.quantity !== 1 ? "s" : ""}
                               </p>
                             </div>
                           </div>

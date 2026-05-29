@@ -9,11 +9,13 @@ namespace AlugaAi.Services
     public class RentService : IRentService
     {
         private readonly IRentRepository _repository;
+        private readonly IProductRepository _productRepository;
         private readonly IEmailService _emailService;
 
-        public RentService(IRentRepository repository, IEmailService emailService)
+        public RentService(IRentRepository repository, IProductRepository productRepository, IEmailService emailService)
         {
             _repository = repository;
+            _productRepository = productRepository;
             _emailService = emailService;
         }
 
@@ -23,6 +25,13 @@ namespace AlugaAi.Services
             {
                 throw new ArgumentException("ReturnDate must be after RentalDate.");
             }
+
+            if (request.Quantity <= 0)
+            {
+                throw new ArgumentException("Quantity must be greater than zero.");
+            }
+
+            await ValidateStockAsync(request.ProductId, request.Quantity);
 
             return await _repository.CreateAsync(request);
         }
@@ -43,11 +52,34 @@ namespace AlugaAi.Services
                 }
             }
 
+            var productQuantities = requestList
+                .GroupBy(r => r.ProductId)
+                .ToDictionary(g => g.Key, g => g.Sum(r => r.Quantity));
+
+            foreach (var (productId, totalRequested) in productQuantities)
+            {
+                await ValidateStockAsync(productId, totalRequested);
+            }
+
             var created = await _repository.CreateManyAsync(requestList);
 
-            // Optionally, could send emails here. Keeping behavior minimal for now.
-
             return created;
+        }
+
+        private async Task ValidateStockAsync(Guid productId, int requestedQuantity)
+        {
+            var product = await _productRepository.GetByIdAsync(productId)
+                ?? throw new ArgumentException("Product not found.");
+
+            var activeQuantity = await _repository.GetActiveQuantityByProductIdAsync(productId);
+
+            var available = product.Quantity - activeQuantity;
+
+            if (requestedQuantity > available)
+            {
+                throw new ArgumentException(
+                    $"Insufficient stock. Only {available} unit(s) available for this product.");
+            }
         }
 
         public Task<List<RentViewModel>> GetAllAsync()

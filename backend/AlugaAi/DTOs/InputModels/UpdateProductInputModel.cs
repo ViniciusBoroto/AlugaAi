@@ -6,6 +6,7 @@ namespace AlugaAi.DTOs.InputModels
         decimal PricePerDay,
         string PhotoUrl,
         Guid CategoryId,
-        Guid StoreId
+        Guid StoreId,
+        int Quantity
     );
 }

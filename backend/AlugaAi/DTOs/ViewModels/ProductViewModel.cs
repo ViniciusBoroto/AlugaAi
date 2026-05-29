@@ -9,6 +9,8 @@ namespace AlugaAi.DTOs.ViewModels
         Guid CategoryId,
         Guid StoreId,
         string CategoryName,
-        string StoreAddress
+        string StoreAddress,
+        int Quantity,
+        int AvailableQuantity
     );
 }

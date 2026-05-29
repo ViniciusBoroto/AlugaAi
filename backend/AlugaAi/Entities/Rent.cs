@@ -6,6 +6,7 @@
         public DateTime ReturnDate { get; set; }
         public DateTime? DeliveredAt { get; set; } = null;
         public DateTime? ReturnedAt{ get; set; } = null;
+        public int Quantity { get; set; }
         public Product Product { get; set; }
         public Guid ProductId { get; set; }
         public Renter Renter { get; set; }

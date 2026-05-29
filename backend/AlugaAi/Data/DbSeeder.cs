@@ -28,63 +28,72 @@ namespace AlugaAi.Data
                 35m,
                 "https://lojawap.vtexassets.com/arquivos/ids/176185/parafusadeira-e-furadeira-de-impacto-wap-wf-700-fe_01.png?v=638793668909000000",
                 "19e1d91b-f176-4c4a-b801-f0f239841eb4",
-                "7e52d458-7268-4684-abf2-9eb19bb5320d"),
+                "7e52d458-7268-4684-abf2-9eb19bb5320d",
+                5),
             new(
                 "Betoneira 120L",
                 "Motor 1/2 CV, tambor basculante e estrutura reforçada para obra.",
                 89m,
                 "https://casadopicapau.vtexassets.com/arquivos/ids/164635/40104201.png?v=638248684185000000",
                 "19e1d91b-f176-4c4a-b801-f0f239841eb4",
-                "8a5d2579-e869-4248-baaf-2cf634cc533d"),
+                "8a5d2579-e869-4248-baaf-2cf634cc533d",
+                3),
             new(
                 "Serra Circular",
                 "1200W, disco 7.1/4 e profundidade de corte de 65mm.",
                 45m,
                 "https://madeirasgasometro.vtexassets.com/arquivos/ids/174359/serra-circular-185mm-sc16-stanley-imagem-01.jpg?v=637139100535670000",
                 "19e1d91b-f176-4c4a-b801-f0f239841eb4",
-                "cd6f1fc8-ca50-4972-8916-c94f35b8a83d"),
+                "cd6f1fc8-ca50-4972-8916-c94f35b8a83d",
+                4),
             new(
                 "Cortador de Grama",
                 "Motor a gasolina 4T, 3.5HP e corte de 46cm.",
                 55m,
                 "https://images.tcdn.com.br/img/img_prod/1103256/cortador_de_grama_eletrico_trapp_mc_50e_505095609_1_fcef2609ebc7a80914e8397ed17df267.jpg",
                 "4b235613-2bf8-4821-b26f-c6b0cde11f5e",
-                "7cfdb2ee-26e7-4131-aa2f-b68d65c36484"),
+                "7cfdb2ee-26e7-4131-aa2f-b68d65c36484",
+                6),
             new(
                 "Motosserra 16",
                 "40cc, corrente automática e partida fácil para poda e corte.",
                 70m,
                 "https://m.media-amazon.com/images/I/31Ulzu8teNL._AC_UF894,1000_QL80_.jpg",
                 "4b235613-2bf8-4821-b26f-c6b0cde11f5e",
-                "1ad0232e-18f5-412e-bdb7-0dd7e0ceae0b"),
+                "1ad0232e-18f5-412e-bdb7-0dd7e0ceae0b",
+                4),
             new(
                 "Lavadora de Alta Pressão",
                 "1800 PSI, mangueira de 5m e ideal para quintais e fachadas.",
                 50m,
                 "https://lojawap.vtexassets.com/arquivos/ids/174272/lavadora-de-alta-pressao-1400w-1500psi-wap-eco-fit-2200_01.png?v=638792139812700000",
                 "f65dd234-4921-4574-a29d-9c7db263fcf8",
-                "225cb554-faa0-44c7-ba17-44faec0dca5b"),
+                "225cb554-faa0-44c7-ba17-44faec0dca5b",
+                5),
             new(
                 "Escada Articulada",
                 "4x4 degraus, alumínio e suporte de até 150kg.",
                 30m,
                 "https://www.reisam.com.br/wp-content/uploads/2021/01/articulada-1.png",
                 "f65dd234-4921-4574-a29d-9c7db263fcf8",
-                "6fe4ef02-6d31-40b8-a474-7f6495f92477"),
+                "6fe4ef02-6d31-40b8-a474-7f6495f92477",
+                8),
             new(
                 "Compressor de Ar",
                 "24L, 2HP, indicado para calibragem e pintura leve.",
                 58m,
                 "https://brasmetal.com/wp-content/uploads/2019/02/Imagens-recortadas_37.png",
                 "92ef5452-e237-4fc8-8bf3-8c5ef17fda16",
-                "d8e0a11e-7021-49a4-81e4-1892ae64fd56"),
+                "d8e0a11e-7021-49a4-81e4-1892ae64fd56",
+                3),
             new(
                 "Scanner Automotivo",
                 "OBD2, leitura de falhas e compatível com carros nacionais.",
                 46m,
                 "https://www.alfatest.com.br/wp-content/uploads/2023/10/rf-ALFATEST-116-recorte-Grande.png",
                 "92ef5452-e237-4fc8-8bf3-8c5ef17fda16",
-                "e12e3f4d-aa31-4194-b66a-a5df66a59e0d"),
+                "e12e3f4d-aa31-4194-b66a-a5df66a59e0d",
+                7),
         ];
 
         public static async Task SeedAsync(
@@ -183,6 +192,7 @@ namespace AlugaAi.Data
                     CategoryId = Guid.Parse(productSeed.CategoryId),
                     StoreId = StoreId,
                     CreatedAt = SeedCreatedAt,
+                    Quantity = productSeed.Quantity,
                 });
             }
 
@@ -197,6 +207,7 @@ namespace AlugaAi.Data
             decimal PricePerDay,
             string PhotoUrl,
             string CategoryId,
-            string Id);
+            string Id,
+            int Quantity);
     }
 }

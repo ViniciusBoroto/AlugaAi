@@ -7,6 +7,7 @@ namespace AlugaAi.Interfaces
     {
         Task<RentViewModel> CreateAsync(CreateRentInputModel request);
         Task<List<RentViewModel>> CreateManyAsync(IEnumerable<CreateRentInputModel> requests);
+        Task<int> GetActiveQuantityByProductIdAsync(Guid productId);
         Task<List<RentViewModel>> GetAllAsync();
         Task<List<RentViewModel>> GetByRenterIdAsync(Guid renterId);
         Task<List<RentViewModel>> GetByStoreIdAsync(Guid storeId);

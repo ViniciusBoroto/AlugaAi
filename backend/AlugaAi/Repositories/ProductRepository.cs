@@ -26,7 +26,8 @@ namespace AlugaAi.Repositories
                 PricePerDay = request.PricePerDay,
                 PhotoUrl = request.PhotoUrl,
                 CategoryId = request.CategoryId,
-                StoreId = request.StoreId
+                StoreId = request.StoreId,
+                Quantity = request.Quantity
             };
 
             _context.Products.Add(product);
@@ -61,13 +62,20 @@ namespace AlugaAi.Repositories
 
         public async Task<ProductViewModel?> GetByIdAsync(Guid id)
         {
-            return await _context.Products
+            var product = await _context.Products
                 .AsNoTracking()
                 .Include(p => p.Category)
                 .Include(p => p.Store)
                 .Where(p => p.Id == id && p.RemovedAt == null)
-                .Select(p => ToViewModel(p))
                 .FirstOrDefaultAsync();
+
+            if (product is null) return null;
+
+            var activeRentQuantity = await _context.Rents
+                .Where(r => r.ProductId == id && r.RemovedAt == null && r.ReturnedAt == null)
+                .SumAsync(r => (int?)r.Quantity) ?? 0;
+
+            return ToViewModel(product, activeRentQuantity);
         }
 
         public async Task<ProductViewModel?> UpdateAsync(Guid id, UpdateProductInputModel request)
@@ -83,6 +91,7 @@ namespace AlugaAi.Repositories
             product.PhotoUrl = request.PhotoUrl;
             product.CategoryId = request.CategoryId;
             product.StoreId = request.StoreId;
+            product.Quantity = request.Quantity;
 
             await _context.SaveChangesAsync();
 
@@ -101,7 +110,7 @@ namespace AlugaAi.Repositories
             return true;
         }
 
-        private static ProductViewModel ToViewModel(Product p)
+        private static ProductViewModel ToViewModel(Product p, int activeRentQuantity = 0)
         {
             return new ProductViewModel(
                 p.Id,
@@ -112,7 +121,9 @@ namespace AlugaAi.Repositories
                 p.CategoryId,
                 p.StoreId,
                 p.Category?.Name ?? string.Empty,
-                p.Store?.Adress ?? string.Empty
+                p.Store?.Adress ?? string.Empty,
+                p.Quantity,
+                p.Quantity - activeRentQuantity
             );
         }
     }

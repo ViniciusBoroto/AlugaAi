@@ -295,6 +295,8 @@ export default async function RentProductPage({
               categoryName={product.categoryName}
               storeName={store?.fantasyName}
               pickupLabel={pickupAddress}
+              quantity={product.quantity}
+              availableQuantity={product.availableQuantity}
             />
           </aside>
         </div>

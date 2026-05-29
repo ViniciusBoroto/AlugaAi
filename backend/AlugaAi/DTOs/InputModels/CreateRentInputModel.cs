@@ -4,6 +4,7 @@
         DateTime RentalDate,
         DateTime ReturnDate,
         Guid ProductId,
-        Guid RenterId
+        Guid RenterId,
+        int Quantity
     );
 }

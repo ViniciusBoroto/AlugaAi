@@ -44,6 +44,7 @@ namespace AlugaAi.Data
                 entity.Property(product => product.PricePerDay).IsRequired().HasColumnType("decimal(18,2)");
                 entity.Property(product => product.PhotoUrl).HasMaxLength(500);
                 entity.Property(product => product.CreatedAt).IsRequired();
+                entity.Property(product => product.Quantity).IsRequired().HasDefaultValue(1);
 
                 entity.Property(product => product.CategoryId).IsRequired();
                 entity.Property(product => product.StoreId).IsRequired();

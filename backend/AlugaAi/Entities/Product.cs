@@ -6,6 +6,7 @@
         public string Description { get; set; }
         public decimal PricePerDay { get; set; }
         public string PhotoUrl { get; set; }
+        public int Quantity { get; set; }
         public Category Category { get; set; }
         public Guid CategoryId { get; set; }
         public Guid StoreId { get; set; }

@@ -16,6 +16,8 @@ type RentalDatePickerProps = {
   categoryName?: string
   storeName?: string
   pickupLabel?: string
+  quantity: number
+  availableQuantity: number
 }
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
@@ -53,6 +55,8 @@ export function RentalDatePicker({
   categoryName,
   storeName,
   pickupLabel,
+  quantity,
+  availableQuantity,
 }: RentalDatePickerProps) {
   const { user } = useAuth()
   const [range, setRange] = useState<DateRange | undefined>()
@@ -60,6 +64,7 @@ export function RentalDatePicker({
   const [errorMessage, setErrorMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
+  const [rentQuantity, setRentQuantity] = useState(1)
 
   const today = useMemo(() => {
     const date = new Date()
@@ -68,9 +73,10 @@ export function RentalDatePicker({
   }, [])
 
   const rentalDays = getRentalDays(range)
-  const total = rentalDays * pricePerDay
+  const total = rentalDays * pricePerDay * rentQuantity
   const isStoreUser = user?.role === "Store"
-  const canConfirm = Boolean(range?.from)
+  const quantityError = rentQuantity > availableQuantity ? "Apenas " + availableQuantity + " unidade(s) disponível(is) em estoque." : ""
+  const canConfirm = Boolean(range?.from) && !quantityError && rentQuantity > 0
   const selectedReturnDate = range?.to ?? range?.from
 
   function handleSelect(nextRange: DateRange | undefined) {
@@ -112,6 +118,7 @@ export function RentalDatePicker({
         returnDate: returnDate.toISOString(),
         productId,
         renterId: user.renterId,
+        quantity: rentQuantity,
       })
 
       setConfirmationMessage(
@@ -230,6 +237,53 @@ export function RentalDatePicker({
       </div>
 
       <div className="space-y-4 px-5 py-5 sm:px-6">
+        <div className="rounded-[1.15rem] border border-border/80 bg-card p-4">
+          <div className="mb-3">
+            <p className="text-sm font-semibold text-foreground">
+              Quantidade
+            </p>
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              {availableQuantity} de {quantity} disponível(is)
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setRentQuantity(Math.max(1, rentQuantity - 1))}
+                className="flex size-8 items-center justify-center rounded-lg border border-border/80 bg-background text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-40"
+                disabled={rentQuantity <= 1}
+              >
+                −
+              </button>
+              <input
+                type="number"
+                min={1}
+                max={availableQuantity}
+                value={rentQuantity}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10)
+                  setRentQuantity(isNaN(val) || val < 1 ? 1 : val)
+                }}
+                className="w-14 rounded-lg border border-border/80 bg-background px-2 py-1 text-center text-sm font-semibold text-foreground [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              />
+              <button
+                type="button"
+                onClick={() => setRentQuantity(Math.min(quantity, rentQuantity + 1))}
+                className="flex size-8 items-center justify-center rounded-lg border border-border/80 bg-background text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-40"
+                disabled={rentQuantity >= availableQuantity}
+              >
+                +
+              </button>
+            </div>
+          </div>
+          {quantityError ? (
+            <p className="mt-2 text-xs font-medium text-destructive">
+              {quantityError}
+            </p>
+          ) : null}
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-border/80 bg-muted/35 p-4">
             <p className="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
@@ -259,6 +313,12 @@ export function RentalDatePicker({
             <span className="text-muted-foreground">Valor por dia</span>
             <span className="font-semibold text-foreground">
               {currencyFormatter.format(pricePerDay)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-3 border-b border-border py-3 text-sm">
+            <span className="text-muted-foreground">Quantidade</span>
+            <span className="font-semibold text-foreground">
+              {rentQuantity} {rentQuantity === 1 ? "unidade" : "unidades"}
             </span>
           </div>
           <div className="flex items-center justify-between gap-3 border-b border-border py-3 text-sm">

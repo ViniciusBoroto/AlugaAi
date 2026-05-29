@@ -24,7 +24,8 @@ namespace AlugaAi.Repositories
                 RentalDate = request.RentalDate,
                 ReturnDate = request.ReturnDate,
                 ProductId = request.ProductId,
-                RenterId = request.RenterId
+                RenterId = request.RenterId,
+                Quantity = request.Quantity
             };
 
             _context.Rents.Add(rent);
@@ -46,7 +47,8 @@ namespace AlugaAi.Repositories
                 RentalDate = request.RentalDate,
                 ReturnDate = request.ReturnDate,
                 ProductId = request.ProductId,
-                RenterId = request.RenterId
+                RenterId = request.RenterId,
+                Quantity = request.Quantity
             }).ToList();
 
             _context.Rents.AddRange(rents);
@@ -183,6 +185,13 @@ namespace AlugaAi.Repositories
                 rent.Product.Name);
         }
 
+        public async Task<int> GetActiveQuantityByProductIdAsync(Guid productId)
+        {
+            return await _context.Rents
+                .Where(r => r.ProductId == productId && r.RemovedAt == null && r.ReturnedAt == null)
+                .SumAsync(r => r.Quantity);
+        }
+
         public async Task<bool> DeleteAsync(Guid id)
         {
             var rent = await _context.Rents
@@ -211,7 +220,8 @@ namespace AlugaAi.Repositories
                 rent.ProductId,
                 rent.Product.Name,
                 rent.RenterId,
-                rent.Renter.Name);
+                rent.Renter.Name,
+                rent.Quantity);
         }
 
         private static RentStatus GetStatus(Rent rent)

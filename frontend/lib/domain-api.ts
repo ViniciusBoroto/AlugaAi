@@ -18,6 +18,8 @@ export type Product = {
   categoryId: string
   storeId: string
   categoryName: string
+  quantity: number
+  availableQuantity: number
 }
 
 export type ProductPayload = {
@@ -27,6 +29,7 @@ export type ProductPayload = {
   photoUrl: string
   categoryId: string
   storeId: string
+  quantity: number
 }
 
 export type Rent = {
@@ -40,6 +43,7 @@ export type Rent = {
   productName: string
   renterId: string
   renterName: string
+  quantity: number
 }
 
 export type RentStatus = "Pending" | "Delivered" | "Returned"
@@ -49,6 +53,7 @@ export type RentPayload = {
   returnDate: string
   productId: string
   renterId: string
+  quantity: number
 }
 
 export type RentStatusPayload = {
