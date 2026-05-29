@@ -121,6 +121,10 @@ export async function getRents() {
   return fetchApi("/Rent") as Promise<Rent[]>
 }
 
+export async function getRentsByRenter(renterId: string) {
+  return fetchApi(`/Rent/renter/${renterId}`) as Promise<Rent[]>
+}
+
 export async function getRentsByStore(storeId: string) {
   return fetchApi(`/Rent/store/${storeId}`) as Promise<Rent[]>
 }

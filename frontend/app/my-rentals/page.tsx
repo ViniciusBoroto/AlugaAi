@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card"
 import {
   getRenterById,
-  getRents,
+  getRentsByRenter,
   type Rent,
   type RentStatus,
   type Renter,
@@ -54,7 +54,7 @@ export default function MyRentalsPage() {
     }
 
     if (!user.renterId) {
-      setError("Perfil de cliente nao encontrado para esta conta.")
+      setError("Perfil de cliente não encontrado para esta conta.")
       return
     }
 
@@ -67,16 +67,16 @@ export default function MyRentalsPage() {
       try {
         const [currentRenter, allRents] = await Promise.all([
           getRenterById(renterId),
-          getRents(),
+          getRentsByRenter(renterId),
         ])
 
         setRenter(currentRenter)
-        setRents(allRents.filter((rent) => rent.renterId === currentRenter.id))
+        setRents(allRents)
       } catch (err) {
         setError(
           err instanceof Error
             ? err.message
-            : "Nao foi possivel carregar seus alugueis."
+            : "Não foi possível carregar seus aluguéis."
         )
       } finally {
         setIsLoadingData(false)
@@ -98,27 +98,79 @@ export default function MyRentalsPage() {
       <Navbar />
 
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-8 sm:px-6">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Meus alugueis
-          </h1>
-          <p className="mt-1 text-muted-foreground">
-            Acompanhe historico, retirada e devolucao das ferramentas alugadas.
-          </p>
-        </div>
+        <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+          <Card className="border-border bg-card shadow-sm">
+            <CardContent className="pt-6">
+              <div className="flex flex-col gap-5">
+                <div className="flex flex-wrap gap-2">
+                  <Badge
+                    variant="outline"
+                    className="border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-900 dark:bg-violet-950/30 dark:text-violet-200"
+                  >
+                    Meus aluguéis
+                  </Badge>
+                  <Badge variant="secondary">Área do cliente</Badge>
+                </div>
+                <div>
+                  <p className="text-sm font-medium tracking-[0.18em] text-muted-foreground uppercase">
+                    Acompanhamento
+                  </p>
+                  <h1 className="mt-3 text-4xl font-[var(--font-display)] font-semibold tracking-[-0.04em]">
+                    Seus pedidos em um só lugar.
+                  </h1>
+                  <p className="mt-3 max-w-2xl text-base text-muted-foreground">
+                    Acompanhe retirada, devolução e histórico das ferramentas
+                    alugadas com uma leitura mais clara.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border bg-card shadow-sm">
+            <CardHeader>
+              <CardTitle>Resumo</CardTitle>
+              <CardDescription>
+                Visão rápida do seu histórico de locações.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              <div className="rounded-xl border border-border bg-muted/35 p-4">
+                <p className="text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                  Cliente
+                </p>
+                <p className="mt-2 font-semibold">
+                  {renter?.name ?? "Perfil não encontrado"}
+                </p>
+              </div>
+              <div className="rounded-xl border border-border bg-muted/35 p-4">
+                <p className="text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                  Total
+                </p>
+                <p className="mt-2 text-2xl font-semibold">{rents.length}</p>
+              </div>
+              <div className="rounded-xl border border-border bg-muted/35 p-4">
+                <p className="text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                  Em aberto
+                </p>
+                <p className="mt-2 text-2xl font-semibold">{activeRents}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
 
         {loading ? (
           <Card>
             <CardContent className="py-6 text-muted-foreground">
-              Carregando sessao...
+              Carregando sessão...
             </CardContent>
           </Card>
         ) : !user ? (
           <Card>
             <CardHeader>
-              <CardTitle>Entre para ver seu historico</CardTitle>
+              <CardTitle>Entre para ver seu histórico</CardTitle>
               <CardDescription>
-                O historico de alugueis fica vinculado ao seu cadastro.
+                O histórico de aluguéis fica vinculado ao seu cadastro.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -130,9 +182,9 @@ export default function MyRentalsPage() {
         ) : user.role !== "Renter" ? (
           <Card>
             <CardHeader>
-              <CardTitle>Historico de cliente</CardTitle>
+              <CardTitle>Histórico de cliente</CardTitle>
               <CardDescription>
-                Esta area e voltada para clientes. Lojas acompanham pedidos no
+                Esta área é voltada para clientes. Lojas acompanham pedidos no
                 painel.
               </CardDescription>
             </CardHeader>
@@ -144,29 +196,6 @@ export default function MyRentalsPage() {
           </Card>
         ) : (
           <>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <Card>
-                <CardContent className="py-4">
-                  <p className="text-sm text-muted-foreground">Cliente</p>
-                  <p className="mt-1 font-semibold">
-                    {renter?.name ?? "Perfil nao encontrado"}
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="py-4">
-                  <p className="text-sm text-muted-foreground">Total</p>
-                  <p className="mt-1 text-2xl font-semibold">{rents.length}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="py-4">
-                  <p className="text-sm text-muted-foreground">Em aberto</p>
-                  <p className="mt-1 text-2xl font-semibold">{activeRents}</p>
-                </CardContent>
-              </Card>
-            </div>
-
             {error ? (
               <p className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
                 {error}
@@ -176,7 +205,7 @@ export default function MyRentalsPage() {
             {isLoadingData ? (
               <Card>
                 <CardContent className="py-6 text-muted-foreground">
-                  Carregando alugueis...
+                  Carregando aluguéis...
                 </CardContent>
               </Card>
             ) : rents.length === 0 ? (
@@ -184,7 +213,7 @@ export default function MyRentalsPage() {
                 <CardHeader>
                   <CardTitle>Nenhum aluguel encontrado</CardTitle>
                   <CardDescription>
-                    Quando voce alugar uma ferramenta, ela aparecera aqui.
+                    Quando você alugar uma ferramenta, ela aparecerá aqui.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -209,13 +238,11 @@ export default function MyRentalsPage() {
                             </CardTitle>
                             <CardDescription>Pedido {rent.id}</CardDescription>
                           </div>
-                          <Badge variant={status.variant}>
-                            {status.label}
-                          </Badge>
+                          <Badge variant={status.variant}>{status.label}</Badge>
                         </div>
                       </CardHeader>
                       <CardContent className="grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-lg border bg-muted/30 p-3">
+                        <div className="rounded-xl border border-border bg-muted/30 p-4">
                           <p className="flex items-center gap-2 text-xs text-muted-foreground">
                             <CalendarDays className="size-3.5" />
                             Retirada
@@ -224,17 +251,17 @@ export default function MyRentalsPage() {
                             {formatDate(rent.rentalDate)}
                           </p>
                         </div>
-                        <div className="rounded-lg border bg-muted/30 p-3">
+                        <div className="rounded-xl border border-border bg-muted/30 p-4">
                           <p className="flex items-center gap-2 text-xs text-muted-foreground">
                             <CalendarDays className="size-3.5" />
-                            Devolucao
+                            Devolução
                           </p>
                           <p className="mt-1 font-medium">
                             {formatDate(rent.returnDate)}
                           </p>
                         </div>
                         {rent.deliveredAt ? (
-                          <div className="rounded-lg border bg-muted/30 p-3">
+                          <div className="rounded-xl border border-border bg-muted/30 p-4">
                             <p className="flex items-center gap-2 text-xs text-muted-foreground">
                               <CalendarDays className="size-3.5" />
                               Entregue em
@@ -245,7 +272,7 @@ export default function MyRentalsPage() {
                           </div>
                         ) : null}
                         {rent.returnedAt ? (
-                          <div className="rounded-lg border bg-muted/30 p-3">
+                          <div className="rounded-xl border border-border bg-muted/30 p-4">
                             <p className="flex items-center gap-2 text-xs text-muted-foreground">
                               <CalendarDays className="size-3.5" />
                               Devolvido em

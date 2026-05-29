@@ -6,6 +6,7 @@ type CategoryTileProps = {
   icon: LucideIcon
   title: string
   items: number
+  index?: number
   isActive?: boolean
   onClick?: () => void
   className?: string
@@ -15,6 +16,7 @@ export function CategoryTile({
   icon: Icon,
   title,
   items,
+  index = 0,
   isActive = false,
   onClick,
   className,
@@ -24,27 +26,28 @@ export function CategoryTile({
       type="button"
       onClick={onClick}
       aria-pressed={isActive}
+      style={{ animationDelay: `${index * 70}ms` }}
       className={cn(
-        "flex items-center gap-3 rounded-[1.6rem] border border-white/60 bg-card/85 px-4 py-4 text-left shadow-[0_14px_34px_rgba(112,70,44,0.1)] transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/10",
-        isActive && "border-primary bg-primary text-primary-foreground",
+        "flex min-h-0 animate-in items-center gap-4 rounded-lg border border-transparent px-3 py-3 text-left transition duration-300 fade-in slide-in-from-bottom-2 hover:bg-muted/55 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+        isActive && "border-border bg-card text-foreground shadow-sm",
         className
       )}
     >
       <span
         className={cn(
-          "flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground",
-          isActive && "bg-primary-foreground text-primary"
+          "flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors duration-300",
+          isActive && "bg-primary text-primary-foreground"
         )}
       >
         <Icon className="size-4" />
       </span>
 
-      <div>
-        <h3 className="text-2xl leading-tight font-semibold">{title}</h3>
+      <div className="min-w-0">
+        <h3 className="text-base leading-tight font-medium">{title}</h3>
         <p
           className={cn(
-            "text-lg text-muted-foreground",
-            isActive && "text-primary-foreground/80"
+            "mt-1 text-sm text-muted-foreground",
+            isActive && "text-foreground/70"
           )}
         >
           {items} itens

@@ -58,6 +58,13 @@ namespace AlugaAi.Controllers
             return Ok(rents);
         }
 
+        [HttpGet("renter/{renterId:guid}")]
+        public async Task<IActionResult> GetByRenter(Guid renterId)
+        {
+            var rents = await _service.GetByRenterIdAsync(renterId);
+            return Ok(rents);
+        }
+
         [HttpGet("store/{storeId:guid}")]
         public async Task<IActionResult> GetByStore(Guid storeId)
         {

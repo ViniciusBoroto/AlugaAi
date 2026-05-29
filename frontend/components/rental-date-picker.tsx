@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { CalendarDays, CheckCircle2 } from "lucide-react"
+import { CalendarDays, CheckCircle2, Store as StoreIcon } from "lucide-react"
 import type { DateRange } from "react-day-picker"
 
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,10 @@ import { useAuth } from "@/hooks/use-auth"
 type RentalDatePickerProps = {
   productId: string
   pricePerDay: number
+  productTitle: string
+  categoryName?: string
+  storeName?: string
+  pickupLabel?: string
 }
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
@@ -45,6 +49,10 @@ function getRentalDays(range?: DateRange) {
 export function RentalDatePicker({
   productId,
   pricePerDay,
+  productTitle,
+  categoryName,
+  storeName,
+  pickupLabel,
 }: RentalDatePickerProps) {
   const { user } = useAuth()
   const [range, setRange] = useState<DateRange | undefined>()
@@ -61,6 +69,13 @@ export function RentalDatePicker({
   const rentalDays = getRentalDays(range)
   const total = rentalDays * pricePerDay
   const canConfirm = Boolean(range?.from)
+  const selectedReturnDate = range?.to ?? range?.from
+
+  function handleSelect(nextRange: DateRange | undefined) {
+    setRange(nextRange)
+    setErrorMessage("")
+    setConfirmationMessage("")
+  }
 
   async function handleConfirm() {
     if (!range?.from) {
@@ -68,17 +83,17 @@ export function RentalDatePicker({
     }
 
     if (!user) {
-      setErrorMessage("Entre como cliente para concluir o aluguel.")
+      setErrorMessage("Entre com uma conta de cliente para concluir o aluguel.")
       return
     }
 
     if (user.role !== "Renter") {
-      setErrorMessage("Contas de loja nao podem alugar produtos.")
+      setErrorMessage("Contas de loja não podem alugar produtos.")
       return
     }
 
     if (!user.renterId) {
-      setErrorMessage("Perfil de cliente nao encontrado para esta conta.")
+      setErrorMessage("Perfil de cliente não encontrado para esta conta.")
       return
     }
 
@@ -97,11 +112,11 @@ export function RentalDatePicker({
       })
 
       setConfirmationMessage(
-        `Alugado para o periodo de ${formatDate(range.from)} ate ${formatDate(returnDate)}.`
+        `Locação confirmada para o período de ${formatDate(range.from)} até ${formatDate(returnDate)}.`
       )
     } catch (err) {
       setErrorMessage(
-        err instanceof Error ? err.message : "Nao foi possivel criar o aluguel."
+        err instanceof Error ? err.message : "Não foi possível criar o aluguel."
       )
     } finally {
       setIsSubmitting(false)
@@ -109,79 +124,152 @@ export function RentalDatePicker({
   }
 
   return (
-    <section className="rounded-xl border bg-card p-4 text-card-foreground sm:p-5">
-      <div className="flex items-start justify-between gap-3 border-b pb-4">
-        <div>
-          <p className="text-sm font-medium">Escolha o periodo</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {currencyFormatter.format(pricePerDay)}
-            <span className="ml-1">por dia</span>
-          </p>
+    <section className="overflow-hidden rounded-[1.6rem] border border-border/80 bg-card text-card-foreground shadow-[0_18px_42px_rgba(15,23,42,0.08)] dark:shadow-[0_20px_44px_rgba(0,0,0,0.24)]">
+      <div className="border-b border-border/80 bg-[linear-gradient(180deg,rgba(124,58,237,0.08)_0%,rgba(124,58,237,0.02)_100%)] px-5 pt-5 pb-5 sm:px-6">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+              Reserva
+            </p>
+            <h2 className="mt-2 text-[1.85rem] font-semibold tracking-[-0.04em] text-foreground">
+              {currencyFormatter.format(pricePerDay)}
+              <span className="ml-2 text-base font-medium text-muted-foreground">
+                / dia
+              </span>
+            </h2>
+          </div>
+          <div className="rounded-2xl bg-primary/12 p-2.5 text-primary">
+            <CalendarDays className="size-5" />
+          </div>
         </div>
-        <CalendarDays className="size-5 text-primary" />
+
+        <p className="mt-3 line-clamp-2 text-base font-semibold text-foreground">
+          {productTitle}
+        </p>
+
+        <div className="mt-3 flex flex-wrap gap-2 text-xs">
+          {categoryName ? (
+            <span className="rounded-full border border-border/80 bg-card px-3 py-1 text-muted-foreground">
+              {categoryName}
+            </span>
+          ) : null}
+          {storeName ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-card px-3 py-1 text-muted-foreground">
+              <StoreIcon className="size-3.5" />
+              {storeName}
+            </span>
+          ) : null}
+        </div>
+
+        <p className="mt-4 text-sm leading-6 text-muted-foreground">
+          Selecione retirada e devolução para ver o valor total estimado antes
+          de confirmar.
+        </p>
+
+        {pickupLabel ? (
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Retirada em {pickupLabel}.
+          </p>
+        ) : null}
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-lg border bg-background p-2">
-        <Calendar
-          mode="range"
-          selected={range}
-          onSelect={setRange}
-          disabled={{ before: today }}
-          numberOfMonths={1}
-          weekStartsOn={0}
-          captionLayout="label"
-          className="mx-auto w-full max-w-sm bg-transparent [--cell-size:2.35rem]"
-          classNames={{
-            root: "w-full",
-            month: "w-full",
-            table: "w-full",
-            caption_label: "text-sm font-semibold text-foreground",
-            weekday: "text-xs text-muted-foreground",
-            today: "rounded bg-muted text-foreground",
-            outside: "text-muted-foreground/50",
-            disabled: "text-muted-foreground/40 opacity-50",
-            range_start: "rounded bg-primary/25 text-foreground",
-            range_middle: "bg-primary/15 text-foreground",
-            range_end: "rounded bg-primary/25 text-foreground",
-          }}
-          formatters={{
-            formatCaption: (date) =>
-              date.toLocaleDateString("pt-BR", {
-                month: "long",
-                year: "numeric",
-              }),
-            formatWeekdayName: (date) =>
-              date
-                .toLocaleDateString("pt-BR", { weekday: "short" })
-                .replace(".", ""),
-          }}
-        />
+      <div className="px-5 pt-5 sm:px-6">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              Escolha o período
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Datas a partir de hoje.
+            </p>
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-[1.15rem] border border-border/80 bg-background p-2.5">
+          <Calendar
+            mode="range"
+            selected={range}
+            onSelect={handleSelect}
+            disabled={{ before: today }}
+            numberOfMonths={1}
+            weekStartsOn={0}
+            captionLayout="label"
+            className="mx-auto w-full max-w-sm bg-transparent [--cell-size:2.45rem]"
+            classNames={{
+              root: "w-full",
+              month: "w-full",
+              table: "w-full",
+              caption_label: "text-sm font-semibold text-foreground",
+              weekday:
+                "text-[0.72rem] font-medium uppercase tracking-[0.14em] text-muted-foreground",
+              today:
+                "rounded-md bg-sky-500/10 font-semibold text-sky-700 dark:text-sky-300",
+              outside: "text-muted-foreground/45",
+              disabled: "text-muted-foreground/30 opacity-50",
+              range_start: "rounded-md bg-primary text-primary-foreground",
+              range_middle: "bg-primary/12 text-foreground",
+              range_end: "rounded-md bg-primary text-primary-foreground",
+            }}
+            formatters={{
+              formatCaption: (date) =>
+                date.toLocaleDateString("pt-BR", {
+                  month: "long",
+                  year: "numeric",
+                }),
+              formatWeekdayName: (date) =>
+                date
+                  .toLocaleDateString("pt-BR", { weekday: "short" })
+                  .replace(".", ""),
+            }}
+          />
+        </div>
       </div>
 
-      <div className="mt-4">
-        <h2 className="text-sm font-semibold">Resumo</h2>
-
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <div className="rounded-lg border bg-background p-3">
-            <p className="text-xs text-muted-foreground">Retirada</p>
-            <p className="mt-1 text-sm font-semibold">
+      <div className="space-y-4 px-5 py-5 sm:px-6">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-border/80 bg-muted/35 p-4">
+            <p className="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+              Retirada
+            </p>
+            <p className="mt-2 text-sm font-semibold text-foreground">
               {formatDate(range?.from)}
             </p>
           </div>
-          <div className="rounded-lg border bg-background p-3">
-            <p className="text-xs text-muted-foreground">Devolucao</p>
-            <p className="mt-1 text-sm font-semibold">
-              {formatDate(range?.to ?? range?.from)}
+          <div className="rounded-2xl border border-border/80 bg-muted/35 p-4">
+            <p className="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+              Devolução
+            </p>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              {formatDate(selectedReturnDate)}
             </p>
           </div>
         </div>
 
-        <div className="mt-3 rounded-lg border border-primary/25 bg-primary/10 p-3">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-sm text-muted-foreground">
-              {rentalDays || 0} {rentalDays === 1 ? "dia" : "dias"}
+        <div className="rounded-[1.15rem] border border-border/80 bg-card p-4">
+          <div className="mb-3">
+            <p className="text-sm font-semibold text-foreground">
+              Resumo da locação
+            </p>
+          </div>
+          <div className="flex items-center justify-between gap-3 border-b border-border pb-3 text-sm">
+            <span className="text-muted-foreground">Valor por dia</span>
+            <span className="font-semibold text-foreground">
+              {currencyFormatter.format(pricePerDay)}
             </span>
-            <span className="text-lg font-semibold">
+          </div>
+          <div className="flex items-center justify-between gap-3 border-b border-border py-3 text-sm">
+            <span className="text-muted-foreground">Período</span>
+            <span className="font-semibold text-foreground">
+              {rentalDays > 0
+                ? `${rentalDays} ${rentalDays === 1 ? "dia" : "dias"}`
+                : "Selecione"}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-3 pt-3">
+            <span className="text-sm font-medium text-foreground">
+              Total estimado do período
+            </span>
+            <span className="text-xl font-semibold tracking-[-0.02em] text-foreground">
               {currencyFormatter.format(total)}
             </span>
           </div>
@@ -189,22 +277,32 @@ export function RentalDatePicker({
 
         <Button
           size="lg"
-          className="mt-3 h-11 w-full rounded-lg"
+          className="h-[3.35rem] w-full rounded-xl text-base"
           disabled={!canConfirm || isSubmitting}
           onClick={handleConfirm}
         >
           <CheckCircle2 className="size-4" />
           {isSubmitting
-            ? "Confirmando..."
+            ? "Confirmando locação..."
             : canConfirm
-              ? "Confirmar aluguel"
-              : "Selecione uma data"}
+              ? "Confirmar locação"
+              : "Escolha a retirada"}
         </Button>
+
+        <p className="text-sm leading-6 text-muted-foreground">
+          {canConfirm
+            ? "Revise o período selecionado antes de confirmar."
+            : "Selecione a retirada para liberar o cálculo do período."}
+        </p>
+
+        <p className="text-sm leading-6 text-muted-foreground">
+          A confirmação da locação é feita com uma conta de cliente.
+        </p>
 
         {errorMessage ? (
           <div
             role="alert"
-            className="mt-3 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm font-medium text-destructive"
+            className="rounded-2xl border border-destructive/35 bg-destructive/8 p-3 text-sm font-medium text-destructive"
           >
             {errorMessage}
           </div>
@@ -214,7 +312,7 @@ export function RentalDatePicker({
           <div
             role="status"
             aria-live="polite"
-            className="mt-3 rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm font-medium text-emerald-700 dark:text-emerald-200"
+            className="rounded-2xl border border-emerald-500/35 bg-emerald-500/10 p-3 text-sm font-medium text-emerald-700 dark:text-emerald-200"
           >
             {confirmationMessage}
           </div>

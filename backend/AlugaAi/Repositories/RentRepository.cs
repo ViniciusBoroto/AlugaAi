@@ -77,6 +77,18 @@ namespace AlugaAi.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<RentViewModel>> GetByRenterIdAsync(Guid renterId)
+        {
+            return await _context.Rents
+                .AsNoTracking()
+                .Include(r => r.Product)
+                .Include(r => r.Renter)
+                .Where(r => r.RenterId == renterId && r.RemovedAt == null)
+                .OrderByDescending(r => r.RentalDate)
+                .Select(r => ToViewModel(r))
+                .ToListAsync();
+        }
+
         public async Task<List<RentViewModel>> GetByStoreIdAsync(Guid storeId)
         {
             return await _context.Rents

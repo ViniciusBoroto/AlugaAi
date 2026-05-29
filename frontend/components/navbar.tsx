@@ -38,11 +38,22 @@ export default function Navbar({ searchQuery = "", onSearch }: NavbarProps) {
   }
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-primary/15 bg-background/88 backdrop-blur-md">
-      <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="shrink-0 text-xl font-bold tracking-tight">
-          <span className="text-foreground">Aluga</span>
-          <span className="text-primary">Ai</span>
+    <nav className="sticky top-0 z-50 border-b border-border bg-background/96">
+      <div className="mx-auto flex min-h-18 w-full max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="shrink-0">
+          <div className="flex items-center gap-3">
+            <span className="flex size-9 items-center justify-center rounded-lg border border-border bg-card text-sm font-bold text-primary">
+              A
+            </span>
+            <div>
+              <p className="text-lg leading-none font-[var(--font-display)] font-semibold tracking-[-0.03em]">
+                ALUGAAI
+              </p>
+              <p className="mt-1 text-[0.68rem] leading-none tracking-[0.24em] text-muted-foreground uppercase">
+                Locação inteligente
+              </p>
+            </div>
+          </div>
         </Link>
 
         <div className="relative hidden min-w-40 flex-1 sm:block">
@@ -52,7 +63,7 @@ export default function Navbar({ searchQuery = "", onSearch }: NavbarProps) {
             placeholder="Buscar ferramentas..."
             value={query}
             onChange={handleSearchChange}
-            className="h-10 rounded-full border-primary/10 bg-card/70 pl-9 shadow-none"
+            className="h-10 rounded-lg border-border bg-background pl-9"
           />
         </div>
 
@@ -108,14 +119,14 @@ export default function Navbar({ searchQuery = "", onSearch }: NavbarProps) {
         </div>
       </div>
 
-      <div className="relative sm:hidden">
+      <div className="relative border-t border-border/60 px-4 py-3 sm:hidden">
         <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           type="text"
           value={query}
           onChange={handleSearchChange}
           placeholder="Buscar ferramentas..."
-          className="h-10 rounded-full border-primary/10 bg-card/70 pl-9 shadow-none"
+          className="h-10 rounded-lg border-border bg-background pl-9"
         />
       </div>
     </nav>

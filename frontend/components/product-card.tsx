@@ -1,13 +1,5 @@
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardAction,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { MapPin, Star } from "lucide-react"
+import { MapPin } from "lucide-react"
 import Link from "next/link"
 import type { Product as ApiProduct } from "@/lib/domain-api"
 
@@ -36,61 +28,57 @@ export function ProductCard({
   photoUrl,
   category = "Construção",
   categoryName,
-  rating = 4.8,
-  reviewsCount = 123,
   location = "São Paulo, SP",
 }: ProductCardProps) {
   const productTitle = name ?? title
   const productPrice = pricePerDay ?? price
   const productImage = photoUrl || image
   const productCategory = categoryName || category
+  const displayPrice =
+    productPrice === 0 ? "Grátis" : `R$ ${Number(productPrice || 20)}`
 
   return (
-    <Card className="relative mx-auto w-full max-w-sm pt-3">
-      <div className="mx-3 overflow-hidden rounded-[1.6rem] bg-muted/60">
-        <img
-          src={productImage}
-          alt={productTitle}
-          className="relative z-20 aspect-video h-full w-full object-contain p-3"
-        />
-      </div>
-      <CardHeader>
-        <CardAction>
-          <Badge variant="secondary">{productCategory}</Badge>
-        </CardAction>
-        <CardTitle>{productTitle}</CardTitle>
-        <CardDescription className="col-span-2 pb-2">
-          <div className="grid w-full grid-cols-[1fr_auto] items-center gap-x-12">
-            <span className="min-w-0">{description}</span>
-            <span className="inline-flex items-center gap-1 justify-self-end">
-              <Star
-                className="h-4 w-4 text-primary"
-                fill="currentColor"
-                strokeWidth={1.5}
-              />
-              <span className="text-sm font-medium text-foreground">
-                {rating.toFixed(1)}
-              </span>
-              {typeof reviewsCount === "number" ? (
-                <span className="text-xs text-muted-foreground">
-                  ({reviewsCount})
-                </span>
-              ) : null}
-            </span>
-          </div>
-          <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin className="h-3 w-3" />
-            <span>{location}</span>
-          </div>
-        </CardDescription>
-        <div>
-          <span className="text-lg font-bold">R$ {productPrice || 20}</span>
-          <span className="text-xs text-muted-foreground">/dia</span>
+    <article className="group mx-auto w-full max-w-sm animate-in duration-300 fade-in slide-in-from-bottom-3">
+      <Link href={`/rent-product/${id}`} className="block">
+        <div className="overflow-hidden rounded-xl bg-muted/30 shadow-sm ring-1 ring-border/80 transition duration-300 group-hover:shadow-[0_16px_36px_rgba(15,23,42,0.08)]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={productImage}
+            alt={productTitle}
+            className="aspect-[1.18/1] h-full w-full object-cover transition duration-500 group-hover:scale-[1.015]"
+          />
         </div>
-        <Button size="lg" className="w-full px-2.5" asChild>
-          <Link href={`/rent-product/${id}`}>Alugar</Link>
+      </Link>
+
+      <div className="px-0 pt-3">
+        <p className="text-[1.9rem] leading-none font-semibold tracking-[-0.04em] text-foreground">
+          {displayPrice}
+        </p>
+        <h3 className="mt-2 line-clamp-2 text-[1.05rem] leading-snug font-medium text-foreground">
+          {productTitle}
+        </h3>
+        <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted-foreground">
+          {description}
+        </p>
+        <div className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
+          <MapPin className="h-3.5 w-3.5" />
+          <span>{location}</span>
+        </div>
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <span className="text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
+            {productCategory}
+          </span>
+          <span className="text-xs text-muted-foreground">por dia</span>
+        </div>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="mt-2 px-0 text-primary hover:bg-transparent hover:text-primary/80"
+          asChild
+        >
+          <Link href={`/rent-product/${id}`}>Ver detalhes</Link>
         </Button>
-      </CardHeader>
-    </Card>
+      </div>
+    </article>
   )
 }

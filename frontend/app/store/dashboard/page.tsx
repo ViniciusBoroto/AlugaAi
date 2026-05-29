@@ -2,8 +2,9 @@
 
 import Link from "next/link"
 import { FormEvent, useEffect, useMemo, useState } from "react"
+import { Plus_Jakarta_Sans, Syne } from "next/font/google"
 import {
-  ArrowUpRight,
+  ArrowRight,
   BarChart3,
   Building2,
   CalendarClock,
@@ -13,24 +14,17 @@ import {
   Pencil,
   Plus,
   ReceiptText,
+  ShieldAlert,
   Tags,
   Trash2,
-  TriangleAlert,
+  TrendingUp,
+  type LucideIcon,
   WalletCards,
 } from "lucide-react"
 
 import Navbar from "@/components/navbar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useAuth } from "@/hooks/use-auth"
+import { cn } from "@/lib/utils"
 import {
   createCategory,
   createProduct,
@@ -48,7 +42,17 @@ import {
   type RentStatus,
   type Store,
 } from "@/lib/domain-api"
-import { useAuth } from "@/hooks/use-auth"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -61,12 +65,42 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   year: "numeric",
 })
 
+const dashboardDisplay = Syne({
+  subsets: ["latin"],
+  variable: "--font-dashboard-display",
+})
+
+const dashboardBody = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-dashboard-body",
+})
+
+const fieldClassName =
+  "h-11 rounded-xl border border-input bg-background px-3 text-sm text-foreground transition-colors outline-none focus-visible:border-violet-500 focus-visible:ring-3 focus-visible:ring-violet-500/15 disabled:cursor-not-allowed disabled:opacity-60"
+
+const textareaClassName =
+  "min-h-32 rounded-xl border border-input bg-background px-3 py-2.5 text-sm text-foreground transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-violet-500 focus-visible:ring-3 focus-visible:ring-violet-500/15"
+
+const primaryButtonClassName =
+  "border-violet-600 bg-violet-600 text-white shadow-sm hover:bg-violet-700 dark:border-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400"
+
+const mutedPanelClassName =
+  "rounded-2xl border border-border/70 bg-muted/35 shadow-sm"
+
 type ProductFormState = {
   name: string
   description: string
   pricePerDay: string
   photoUrl: string
   categoryId: string
+}
+
+type DashboardMetric = {
+  label: string
+  value: string
+  detail: string
+  icon: LucideIcon
+  tone: "violet" | "emerald" | "amber" | "sky"
 }
 
 const emptyForm: ProductFormState = {
@@ -150,6 +184,122 @@ function getStatusSuccessMessage(status: RentStatus) {
       : "Pedido voltou para pendente."
 }
 
+function getMetricToneClasses(tone: DashboardMetric["tone"]) {
+  if (tone === "emerald") {
+    return {
+      card: "border-emerald-200/70 bg-emerald-50/70 dark:border-emerald-900/60 dark:bg-emerald-950/20",
+      icon: "bg-emerald-500/12 text-emerald-700 dark:text-emerald-200",
+    }
+  }
+
+  if (tone === "amber") {
+    return {
+      card: "border-amber-200/70 bg-amber-50/70 dark:border-amber-900/60 dark:bg-amber-950/20",
+      icon: "bg-amber-500/12 text-amber-700 dark:text-amber-200",
+    }
+  }
+
+  if (tone === "sky") {
+    return {
+      card: "border-sky-200/70 bg-sky-50/70 dark:border-sky-900/60 dark:bg-sky-950/20",
+      icon: "bg-sky-500/12 text-sky-700 dark:text-sky-200",
+    }
+  }
+
+  return {
+    card: "border-violet-200/70 bg-violet-50/70 dark:border-violet-900/60 dark:bg-violet-950/20",
+    icon: "bg-violet-500/12 text-violet-700 dark:text-violet-200",
+  }
+}
+
+function getPriorityBlockClasses(hasOverdue: boolean, hasReturnsToday: boolean) {
+  if (hasOverdue) {
+    return "border-rose-200 bg-rose-50/80 dark:border-rose-900/60 dark:bg-rose-950/25"
+  }
+
+  if (hasReturnsToday) {
+    return "border-amber-200 bg-amber-50/80 dark:border-amber-900/60 dark:bg-amber-950/25"
+  }
+
+  return "border-emerald-200 bg-emerald-50/80 dark:border-emerald-900/60 dark:bg-emerald-950/25"
+}
+
+function getAlertCardClasses(title: string) {
+  if (title.includes("atrasad")) {
+    return "border-rose-200/80 bg-rose-50/75 dark:border-rose-900/60 dark:bg-rose-950/20"
+  }
+
+  if (title.includes("hoje")) {
+    return "border-amber-200/80 bg-amber-50/75 dark:border-amber-900/60 dark:bg-amber-950/20"
+  }
+
+  return "border-border/70 bg-card"
+}
+
+function getRentCardClasses(rent: Rent, today: Date) {
+  const status = getRentStatus(rent, today)
+  const isOverdue =
+    startOfDay(new Date(rent.returnDate)).getTime() < today.getTime() &&
+    status.label !== "Devolvido"
+
+  if (isOverdue) {
+    return "border-rose-200/80 bg-rose-50/60 dark:border-rose-900/60 dark:bg-rose-950/18"
+  }
+
+  if (status.label === "Entregue") {
+    return "border-emerald-200/80 bg-emerald-50/60 dark:border-emerald-900/60 dark:bg-emerald-950/18"
+  }
+
+  return "border-border/70 bg-card"
+}
+
+function MetricCard({
+  label,
+  value,
+  detail,
+  icon: Icon,
+  tone,
+}: DashboardMetric) {
+  const toneClasses = getMetricToneClasses(tone)
+
+  return (
+    <Card size="sm" className={cn("shadow-sm", toneClasses.card)}>
+      <CardContent className="py-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-medium tracking-[0.16em] text-muted-foreground uppercase">
+              {label}
+            </p>
+            <p className="mt-2 text-2xl font-semibold tracking-tight">
+              {value}
+            </p>
+          </div>
+          <span
+            className={cn(
+              "flex size-10 items-center justify-center rounded-2xl",
+              toneClasses.icon
+            )}
+          >
+            <Icon className="size-5" />
+          </span>
+        </div>
+        <p className="mt-3 text-sm text-muted-foreground">{detail}</p>
+      </CardContent>
+    </Card>
+  )
+}
+
+function InfoField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-border/70 bg-muted/35 px-4 py-3">
+      <p className="text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-medium text-foreground">{value}</p>
+    </div>
+  )
+}
+
 export default function StoreDashboardPage() {
   const { user, loading } = useAuth()
   const [store, setStore] = useState<Store | null>(null)
@@ -175,12 +325,13 @@ export default function StoreDashboardPage() {
     setError(null)
 
     try {
-      const [currentStore, allCategories, allProducts, allRents] = await Promise.all([
-        getStoreById(user.storeId),
-        getCategories(),
-        getProductsByStore(user.storeId),
-        getRentsByStore(user.storeId),
-      ])
+      const [currentStore, allCategories, allProducts, allRents] =
+        await Promise.all([
+          getStoreById(user.storeId),
+          getCategories(),
+          getProductsByStore(user.storeId),
+          getRentsByStore(user.storeId),
+        ])
 
       const sortedCategories = sortCategories(allCategories)
 
@@ -201,7 +352,7 @@ export default function StoreDashboardPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Nao foi possivel carregar o painel da loja."
+          : "Não foi possível carregar o painel da loja."
       )
     } finally {
       setIsLoadingData(false)
@@ -253,6 +404,24 @@ export default function StoreDashboardPage() {
     [activeRents, today]
   )
 
+  const totalRevenue = useMemo(
+    () =>
+      storeRents.reduce((total, rent) => {
+        const product = productMap.get(rent.productId)
+
+        if (!product) {
+          return total
+        }
+
+        return (
+          total +
+          getRentalDaysFromPeriod(rent.rentalDate, rent.returnDate) *
+            product.pricePerDay
+        )
+      }, 0),
+    [productMap, storeRents]
+  )
+
   const estimatedMonthRevenue = useMemo(() => {
     const currentMonth = today.getMonth()
     const currentYear = today.getFullYear()
@@ -277,16 +446,21 @@ export default function StoreDashboardPage() {
     }, 0)
   }, [productMap, storeRents, today])
 
-  const recentRents = useMemo(
+  const averageTicket = useMemo(
+    () => (storeRents.length > 0 ? totalRevenue / storeRents.length : 0),
+    [storeRents.length, totalRevenue]
+  )
+
+  const priorityRents = useMemo(
     () =>
-      [...storeRents]
+      [...activeRents]
         .sort(
           (left, right) =>
-            new Date(right.rentalDate).getTime() -
-            new Date(left.rentalDate).getTime()
+            new Date(left.returnDate).getTime() -
+            new Date(right.returnDate).getTime()
         )
         .slice(0, 5),
-    [storeRents]
+    [activeRents]
   )
 
   const topProducts = useMemo(() => {
@@ -329,8 +503,9 @@ export default function StoreDashboardPage() {
 
     if (!store) {
       items.push({
-        title: "Perfil da loja nao encontrado",
-        detail: "Confira se o e-mail da conta bate com uma loja cadastrada.",
+        title: "Perfil da loja não encontrado",
+        detail:
+          "Confira se o e-mail da conta corresponde a uma loja cadastrada.",
       })
     }
 
@@ -343,28 +518,34 @@ export default function StoreDashboardPage() {
 
     if (products.length === 0) {
       items.push({
-        title: "Catalogo vazio",
-        detail: "Cadastre o primeiro produto para aparecer na home.",
+        title: "Catálogo vazio",
+        detail: "Cadastre o primeiro produto para exibi-lo na vitrine.",
       })
     }
 
     if (overdueRents.length > 0) {
       items.push({
-        title: `${overdueRents.length} devolucao${overdueRents.length > 1 ? "es" : ""} atrasada${overdueRents.length > 1 ? "s" : ""}`,
+        title:
+          overdueRents.length === 1
+            ? "1 devolução atrasada"
+            : `${overdueRents.length} devoluções atrasadas`,
         detail: "Priorize o contato com esses clientes.",
       })
     }
 
     if (returnsToday.length > 0) {
       items.push({
-        title: `${returnsToday.length} devolucao${returnsToday.length > 1 ? "es" : ""} hoje`,
+        title:
+          returnsToday.length === 1
+            ? "1 devolução hoje"
+            : `${returnsToday.length} devoluções hoje`,
         detail: "Separe tempo para conferir os itens no retorno.",
       })
     }
 
     if (products.length > 0 && products.length < 3) {
       items.push({
-        title: "Catalogo ainda pequeno",
+        title: "Catálogo ainda pequeno",
         detail: "Mais itens aumentam as chances de aluguel.",
       })
     }
@@ -377,6 +558,62 @@ export default function StoreDashboardPage() {
     returnsToday.length,
     store,
   ])
+
+  const dashboardMetrics = useMemo<DashboardMetric[]>(
+    () => [
+      {
+        label: "Receita do mês",
+        value: currencyFormatter.format(estimatedMonthRevenue),
+        detail:
+          storeRents.length > 0
+            ? `${storeRents.length} pedidos registrados no histórico`
+            : "Sem pedidos suficientes para projeção",
+        icon: WalletCards,
+        tone: "violet",
+      },
+      {
+        label: "Aluguéis ativos",
+        value: String(activeRents.length),
+        detail:
+          activeRents.length > 0
+            ? returnsToday.length === 1
+              ? "1 devolução prevista para hoje"
+              : `${returnsToday.length} devoluções previstas para hoje`
+            : "Nenhum item em circulação no momento",
+        icon: Clock3,
+        tone: "emerald",
+      },
+      {
+        label: "Ticket médio",
+        value: currencyFormatter.format(averageTicket),
+        detail:
+          averageTicket > 0
+            ? "Média por pedido considerando todo o histórico"
+            : "Aparece depois do primeiro aluguel",
+        icon: TrendingUp,
+        tone: "amber",
+      },
+      {
+        label: "Produtos ativos",
+        value: String(products.length),
+        detail:
+          categories.length > 0
+            ? `${categories.length} categor${categories.length === 1 ? "ia" : "ias"} organizada${categories.length === 1 ? "" : "s"}`
+            : "Crie a primeira categoria para estruturar o catálogo",
+        icon: Package,
+        tone: "sky",
+      },
+    ],
+    [
+      activeRents.length,
+      averageTicket,
+      categories.length,
+      estimatedMonthRevenue,
+      products.length,
+      returnsToday.length,
+      storeRents.length,
+    ]
+  )
 
   function updateForm(field: keyof ProductFormState, value: string) {
     setForm((current) => ({ ...current, [field]: value }))
@@ -419,7 +656,7 @@ export default function StoreDashboardPage() {
     )
 
     if (alreadyExists) {
-      setError("Essa categoria ja existe.")
+      setError("Essa categoria já existe.")
       return
     }
 
@@ -437,7 +674,7 @@ export default function StoreDashboardPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Nao foi possivel cadastrar a categoria."
+          : "Não foi possível cadastrar a categoria."
       )
     } finally {
       setIsCreatingCategory(false)
@@ -448,7 +685,7 @@ export default function StoreDashboardPage() {
     event.preventDefault()
 
     if (!store) {
-      setError("Perfil da loja nao encontrado.")
+      setError("Perfil da loja não encontrado.")
       return
     }
 
@@ -463,7 +700,7 @@ export default function StoreDashboardPage() {
     }
 
     if (!trimmedDescription) {
-      setError("Informe a descricao do produto.")
+      setError("Informe a descrição do produto.")
       return
     }
 
@@ -473,12 +710,12 @@ export default function StoreDashboardPage() {
     }
 
     if (!Number.isFinite(price) || price <= 0) {
-      setError("Informe um preco por dia maior que zero.")
+      setError("Informe um preço por dia maior que zero.")
       return
     }
 
     if (!isHttpUrl(trimmedPhotoUrl)) {
-      setError("Informe uma URL de foto valida com http ou https.")
+      setError("Informe uma URL de foto válida com http ou https.")
       return
     }
 
@@ -510,7 +747,7 @@ export default function StoreDashboardPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Nao foi possivel salvar o produto."
+          : "Não foi possível salvar o produto."
       )
     } finally {
       setIsSubmitting(false)
@@ -534,7 +771,7 @@ export default function StoreDashboardPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Nao foi possivel remover o produto."
+          : "Não foi possível remover o produto."
       )
     }
   }
@@ -558,7 +795,7 @@ export default function StoreDashboardPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Nao foi possivel atualizar o status do pedido."
+          : "Não foi possível atualizar o status do pedido."
       )
     } finally {
       setUpdatingRentId(null)
@@ -566,24 +803,20 @@ export default function StoreDashboardPage() {
   }
 
   return (
-    <main className="min-h-svh bg-background">
+    <main
+      className={cn(
+        dashboardDisplay.variable,
+        dashboardBody.variable,
+        "min-h-svh bg-background text-foreground"
+      )}
+    >
       <Navbar />
 
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-8 sm:px-6">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Painel da loja
-          </h1>
-          <p className="mt-1 text-muted-foreground">
-            Cadastre ferramentas, mantenha o catalogo atualizado e acompanhe
-            pedidos.
-          </p>
-        </div>
-
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-8 font-[var(--font-dashboard-body)] sm:px-6 lg:px-8">
         {loading ? (
           <Card>
-            <CardContent className="py-6 text-muted-foreground">
-              Carregando sessao...
+            <CardContent className="py-8 text-sm text-muted-foreground">
+              Carregando sessão...
             </CardContent>
           </Card>
         ) : !user ? (
@@ -591,11 +824,11 @@ export default function StoreDashboardPage() {
             <CardHeader>
               <CardTitle>Entre como loja</CardTitle>
               <CardDescription>
-                O painel e exclusivo para contas de loja.
+                O painel é exclusivo para contas de loja.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild>
+              <Button asChild className={primaryButtonClassName}>
                 <Link href="/login">Entrar</Link>
               </Button>
             </CardContent>
@@ -603,169 +836,308 @@ export default function StoreDashboardPage() {
         ) : user.role !== "Store" ? (
           <Card>
             <CardHeader>
-              <CardTitle>Acesso de loja necessario</CardTitle>
+              <CardTitle>Acesso de loja necessário</CardTitle>
               <CardDescription>
-                Sua conta atual e de cliente. Use uma conta de loja para
+                Sua conta atual é de cliente. Use uma conta de loja para
                 cadastrar produtos.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild>
-                <Link href="/my-rentals">Ver meus alugueis</Link>
+              <Button asChild className={primaryButtonClassName}>
+                <Link href="/my-rentals">Ver meus aluguéis</Link>
               </Button>
             </CardContent>
           </Card>
         ) : (
           <>
-            <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-              <Card className="rounded-xl shadow-none ring-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Building2 className="size-5" />
-                    {store?.fantasyName ?? "Loja nao encontrada"}
-                  </CardTitle>
-                  <CardDescription>{user.email}</CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <p className="text-xs text-muted-foreground">CNPJ</p>
-                    <p className="mt-1 font-medium">
-                      {store?.cnpj ?? "Nao informado"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Telefone</p>
-                    <p className="mt-1 font-medium">
-                      {store?.phoneNumber ?? "Nao informado"}
-                    </p>
+            <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+              <Card className="border-border/70 bg-card shadow-sm">
+                <CardContent className="pt-6">
+                  <div className="flex flex-col gap-6">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Badge
+                        variant="outline"
+                        className="border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-900 dark:bg-violet-950/40 dark:text-violet-200"
+                      >
+                        Painel da loja
+                      </Badge>
+                    </div>
+
+                    <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+                      <div>
+                        <p className="text-sm font-medium tracking-[0.18em] text-muted-foreground uppercase">
+                          Operação da loja
+                        </p>
+                        <h1 className="mt-3 text-4xl font-[var(--font-dashboard-display)] font-semibold tracking-[-0.04em] text-foreground">
+                          {store?.fantasyName ?? "Painel da loja"}
+                        </h1>
+                        <p className="mt-3 max-w-2xl text-base text-muted-foreground">
+                          Acompanhe pedidos, ajuste o catálogo e resolva
+                          pendências com menos ruído visual.
+                        </p>
+
+                        <div className="mt-6 flex flex-wrap gap-2">
+                          <Button asChild className={primaryButtonClassName}>
+                            <a href="#catalogo">
+                              <Plus className="size-4" />
+                              {editingProduct
+                                ? "Continuar edição"
+                                : "Cadastrar produto"}
+                            </a>
+                          </Button>
+                          <Button variant="outline" asChild>
+                            <a href="#pedidos">
+                              <ReceiptText className="size-4" />
+                              Gerenciar pedidos
+                            </a>
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className={cn(mutedPanelClassName, "p-5")}>
+                        <div className="flex items-center gap-3">
+                          <span className="flex size-11 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-700 dark:text-violet-200">
+                            <Building2 className="size-5" />
+                          </span>
+                          <div>
+                            <p className="text-sm font-semibold">Resumo da loja</p>
+                            <p className="text-sm text-muted-foreground">
+                              Informações essenciais da operação
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-5 grid gap-3">
+                          <InfoField
+                            label="CNPJ"
+                            value={store?.cnpj ?? "Não informado"}
+                          />
+                          <InfoField
+                            label="Telefone"
+                            value={store?.phoneNumber ?? "Não informado"}
+                          />
+                        </div>
+
+                        <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-200">
+                          {store
+                            ? "Loja pronta para receber e acompanhar locações."
+                            : "Estamos conferindo os dados da loja."}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl shadow-none ring-0">
+              <Card className="border-violet-200/80 bg-violet-50/70 shadow-sm dark:border-violet-900 dark:bg-violet-950/20">
                 <CardHeader>
-                  <CardTitle>Acoes rapidas</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShieldAlert className="size-5 text-violet-700 dark:text-violet-200" />
+                    Foco do dia
+                  </CardTitle>
                   <CardDescription>
-                    Caminhos curtos para operar a loja.
+                    Os pontos mais importantes para manter a loja fluindo.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="grid gap-2 sm:grid-cols-2">
-                  <Button asChild variant="outline" className="justify-between">
-                    <a href="#catalogo">
-                      Cadastrar produto
-                      <ArrowUpRight className="size-4" />
-                    </a>
-                  </Button>
-                  <Button asChild variant="outline" className="justify-between">
-                    <a href="#pedidos">
-                      Ver pedidos
-                      <ArrowUpRight className="size-4" />
-                    </a>
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <Card size="sm" className="rounded-xl shadow-none ring-0">
-                <CardContent className="py-2">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm text-muted-foreground">
-                      Receita do mes
+                <CardContent className="grid gap-3">
+                  <div
+                    className={cn(
+                      "rounded-2xl border p-4 shadow-sm",
+                      getPriorityBlockClasses(
+                        overdueRents.length > 0,
+                        returnsToday.length > 0
+                      )
+                    )}
+                  >
+                    <p className="text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
+                      Prioridade
                     </p>
-                    <WalletCards className="size-4 text-primary" />
-                  </div>
-                  <p className="mt-2 text-2xl font-semibold">
-                    {currencyFormatter.format(estimatedMonthRevenue)}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card size="sm" className="rounded-xl shadow-none ring-0">
-                <CardContent className="py-2">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm text-muted-foreground">
-                      Alugueis ativos
+                    <p className="mt-2 text-lg font-semibold">
+                      {overdueRents.length > 0
+                        ? "Resolver devoluções atrasadas"
+                        : returnsToday.length > 0
+                          ? "Confirmar devoluções previstas"
+                          : products.length === 0
+                            ? "Publicar o primeiro produto"
+                            : "Operação sob controle"}
                     </p>
-                    <Clock3 className="size-4 text-primary" />
-                  </div>
-                  <p className="mt-2 text-2xl font-semibold">
-                    {activeRents.length}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card size="sm" className="rounded-xl shadow-none ring-0">
-                <CardContent className="py-2">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm text-muted-foreground">
-                      Devolucoes pendentes
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {overdueRents.length > 0
+                        ? "Há clientes com itens fora do prazo. Vale agir antes de abrir novos atendimentos."
+                        : returnsToday.length > 0
+                          ? "Hoje há devoluções no radar. Prepare a conferência e a disponibilidade."
+                          : products.length === 0
+                            ? "O catálogo ainda não está visível para gerar demanda."
+                            : "Use as seções abaixo para acompanhar pedidos e refinar o catálogo."}
                     </p>
-                    <CalendarClock className="size-4 text-primary" />
                   </div>
-                  <p className="mt-2 text-2xl font-semibold">
-                    {returnsToday.length + overdueRents.length}
-                  </p>
+
+                  <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                    <div className="rounded-2xl border border-amber-200/80 bg-amber-50/75 p-4 dark:border-amber-900/60 dark:bg-amber-950/20">
+                      <p className="text-sm text-muted-foreground">
+                        Devoluções hoje
+                      </p>
+                      <p className="mt-2 text-2xl font-semibold">
+                        {returnsToday.length}
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-rose-200/80 bg-rose-50/75 p-4 dark:border-rose-900/60 dark:bg-rose-950/20">
+                      <p className="text-sm text-muted-foreground">
+                        Atrasos em aberto
+                      </p>
+                      <p className="mt-2 text-2xl font-semibold">
+                        {overdueRents.length}
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-sky-200/80 bg-sky-50/75 p-4 dark:border-sky-900/60 dark:bg-sky-950/20">
+                      <p className="text-sm text-muted-foreground">
+                        Produtos cadastrados
+                      </p>
+                      <p className="mt-2 text-2xl font-semibold">
+                        {products.length}
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
+            </section>
 
-              <Card size="sm" className="rounded-xl shadow-none ring-0">
-                <CardContent className="py-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm text-muted-foreground">Produtos</p>
-                    <Package className="size-4 text-primary" />
-                  </div>
-                  <p className="mt-2 text-2xl font-semibold">
-                    {products.length}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+            <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {dashboardMetrics.map((metric) => (
+                <MetricCard key={metric.label} {...metric} />
+              ))}
+            </section>
 
-            <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-              <Card className="rounded-xl shadow-none ring-0">
+            {error ? (
+              <p className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                {error}
+              </p>
+            ) : null}
+
+            {success ? (
+              <p className="rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-700 dark:border-violet-900 dark:bg-violet-950/30 dark:text-violet-200">
+                {success}
+              </p>
+            ) : null}
+
+            <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+              <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <ReceiptText className="size-5 text-primary" />
-                    Pedidos recentes
+                    <CalendarClock className="size-5 text-violet-700 dark:text-violet-200" />
+                    Prioridades operacionais
                   </CardTitle>
                   <CardDescription>
-                    Ultimos alugueis feitos nos produtos da loja.
+                    Pedidos que merecem acompanhamento mais próximo.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {recentRents.length === 0 ? (
-                    <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
-                      Nenhum pedido recebido ainda.
-                    </p>
+                  {priorityRents.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-5 text-sm text-muted-foreground">
+                      Nenhum aluguel ativo no momento. Quando houver itens em
+                      circulação, eles aparecem aqui em ordem de devolução.
+                    </div>
                   ) : (
-                    <div className="divide-y rounded-lg border">
-                      {recentRents.map((rent) => {
+                    <div className="grid gap-3">
+                      {priorityRents.map((rent) => {
                         const status = getRentStatus(rent, today)
+                        const isOverdue =
+                          startOfDay(new Date(rent.returnDate)).getTime() <
+                          today.getTime()
 
                         return (
                           <div
                             key={rent.id}
-                            className="grid gap-3 p-3 sm:grid-cols-[1fr_auto] sm:items-center"
+                            className={cn(
+                              "grid gap-4 rounded-2xl border p-4 shadow-sm lg:grid-cols-[1fr_auto]",
+                              getRentCardClasses(rent, today)
+                            )}
                           >
                             <div className="min-w-0">
                               <div className="flex flex-wrap items-center gap-2">
-                                <p className="truncate font-medium">
+                                <p className="font-semibold text-foreground">
                                   {rent.productName}
                                 </p>
                                 <Badge variant={status.variant}>
                                   {status.label}
                                 </Badge>
+                                {isOverdue ? (
+                                  <Badge variant="destructive">
+                                    Ação imediata
+                                  </Badge>
+                                ) : null}
                               </div>
-                              <p className="mt-1 text-sm text-muted-foreground">
-                                {rent.renterName} -{" "}
-                                {formatDate(rent.rentalDate)} ate{" "}
-                                {formatDate(rent.returnDate)}
-                              </p>
+
+                              <div className="mt-3 grid gap-3 text-sm text-muted-foreground sm:grid-cols-3">
+                                <div>
+                                  <p className="text-xs font-medium tracking-[0.12em] uppercase">
+                                    Cliente
+                                  </p>
+                                  <p className="mt-1 text-sm text-foreground">
+                                    {rent.renterName}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs font-medium tracking-[0.12em] uppercase">
+                                    Retirada
+                                  </p>
+                                  <p className="mt-1 text-sm text-foreground">
+                                    {formatDate(rent.rentalDate)}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs font-medium tracking-[0.12em] uppercase">
+                                    Devolução
+                                  </p>
+                                  <p className="mt-1 text-sm text-foreground">
+                                    {formatDate(rent.returnDate)}
+                                  </p>
+                                </div>
+                              </div>
                             </div>
-                            <Button asChild variant="ghost" size="sm">
-                              <a href="#pedidos">Ver</a>
-                            </Button>
+
+                            <div className="flex flex-wrap gap-2 lg:w-[220px] lg:flex-col">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant={
+                                  rent.status === "Delivered"
+                                    ? "secondary"
+                                    : "outline"
+                                }
+                                disabled={
+                                  updatingRentId === rent.id ||
+                                  rent.status === "Delivered"
+                                }
+                                onClick={() =>
+                                  handleUpdateRentStatus(rent, "Delivered")
+                                }
+                              >
+                                {updatingRentId === rent.id
+                                  ? "Atualizando..."
+                                  : "Marcar entregue"}
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant={
+                                  rent.status === "Returned"
+                                    ? "secondary"
+                                    : "outline"
+                                }
+                                disabled={
+                                  updatingRentId === rent.id ||
+                                  rent.status === "Returned"
+                                }
+                                onClick={() =>
+                                  handleUpdateRentStatus(rent, "Returned")
+                                }
+                              >
+                                {updatingRentId === rent.id
+                                  ? "Atualizando..."
+                                  : "Marcar devolvido"}
+                              </Button>
+                            </div>
                           </div>
                         )
                       })}
@@ -774,173 +1146,121 @@ export default function StoreDashboardPage() {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl shadow-none ring-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TriangleAlert className="size-5 text-primary" />
-                    Alertas
-                  </CardTitle>
-                  <CardDescription>
-                    Pontos que merecem atencao operacional.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {dashboardAlerts.length === 0 ? (
-                    <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-700 dark:text-emerald-200">
-                      Tudo em ordem por enquanto.
-                    </div>
-                  ) : (
-                    <div className="grid gap-2">
-                      {dashboardAlerts.map((alert) => (
+              <div className="grid gap-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="size-5 text-violet-700 dark:text-violet-200" />
+                      Produtos em destaque
+                    </CardTitle>
+                    <CardDescription>
+                      Ranking por receita estimada.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {topProducts.length === 0 ? (
+                      <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+                        O ranking aparece assim que os primeiros pedidos
+                        começarem a entrar.
+                      </div>
+                    ) : (
+                      <div className="grid gap-3">
+                        {topProducts.map((item, index) => (
+                          <div
+                            key={item.product.id}
+                            className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-2xl border border-border/70 bg-card p-3 shadow-sm"
+                          >
+                            <span className="flex size-8 items-center justify-center rounded-xl bg-violet-500/10 text-sm font-semibold text-violet-700 dark:text-violet-200">
+                              {index + 1}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="truncate font-medium">
+                                {item.product.name}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {item.count}{" "}
+                                {item.count === 1 ? "aluguel" : "aluguéis"}
+                              </p>
+                            </div>
+                            <p className="text-sm font-semibold">
+                              {currencyFormatter.format(item.revenue)}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <ShieldAlert className="size-5 text-violet-700 dark:text-violet-200" />
+                      Alertas
+                    </CardTitle>
+                    <CardDescription>
+                      Leituras rápidas para agir sem precisar cruzar blocos.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-3">
+                    {dashboardAlerts.length === 0 ? (
+                      <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4 text-sm text-violet-700 dark:border-violet-900 dark:bg-violet-950/30 dark:text-violet-200">
+                        Tudo em ordem por enquanto. O painel está sem pendências
+                        críticas.
+                      </div>
+                    ) : (
+                      dashboardAlerts.map((alert) => (
                         <div
                           key={alert.title}
-                          className="rounded-lg border p-3"
+                          className={cn(
+                            "rounded-2xl border p-4 shadow-sm",
+                            getAlertCardClasses(alert.title)
+                          )}
                         >
                           <p className="font-medium">{alert.title}</p>
                           <p className="mt-1 text-sm text-muted-foreground">
                             {alert.detail}
                           </p>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                      ))
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </section>
 
-            <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-              <Card className="rounded-xl shadow-none ring-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="size-5 text-primary" />
-                    Produtos em destaque
-                  </CardTitle>
-                  <CardDescription>
-                    Itens com maior receita estimada em alugueis.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {topProducts.length === 0 ? (
-                    <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
-                      Os produtos aparecem aqui depois dos primeiros pedidos.
-                    </p>
-                  ) : (
-                    <div className="grid gap-2">
-                      {topProducts.map((item, index) => (
-                        <div
-                          key={item.product.id}
-                          className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-lg border p-3"
-                        >
-                          <span className="flex size-7 items-center justify-center rounded-md bg-primary/15 text-sm font-semibold">
-                            {index + 1}
-                          </span>
-                          <div className="min-w-0">
-                            <p className="truncate font-medium">
-                              {item.product.name}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {item.count}{" "}
-                              {item.count === 1 ? "aluguel" : "alugueis"}
-                            </p>
-                          </div>
-                          <p className="text-sm font-semibold">
-                            {currencyFormatter.format(item.revenue)}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-xl shadow-none ring-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Tags className="size-5 text-primary" />
-                    Saude do catalogo
-                  </CardTitle>
-                  <CardDescription>
-                    Uma leitura rapida do que ja esta cadastrado.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-                  <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground">Categorias</p>
-                    <p className="mt-1 text-xl font-semibold">
-                      {categories.length}
-                    </p>
-                  </div>
-                  <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground">
-                      Media diaria
-                    </p>
-                    <p className="mt-1 text-xl font-semibold">
-                      {products.length > 0
-                        ? currencyFormatter.format(
-                            products.reduce(
-                              (total, product) => total + product.pricePerDay,
-                              0
-                            ) / products.length
-                          )
-                        : currencyFormatter.format(0)}
-                    </p>
-                  </div>
-                  <div className="rounded-lg border p-3">
-                    <p className="text-xs text-muted-foreground">
-                      Total de pedidos
-                    </p>
-                    <p className="mt-1 text-xl font-semibold">
-                      {storeRents.length}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {error ? (
-              <p className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-                {error}
-              </p>
-            ) : null}
-
-            {success ? (
-              <p className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-700 dark:text-emerald-300">
-                {success}
-              </p>
-            ) : null}
-
-            <div
+            <section
               id="catalogo"
-              className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]"
+              className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]"
             >
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Plus className="size-5" />
+                    <Plus className="size-5 text-violet-700 dark:text-violet-200" />
                     {editingProduct ? "Editar produto" : "Novo produto"}
                   </CardTitle>
                   <CardDescription>
-                    Crie uma categoria quando precisar e finalize o cadastro do
-                    item no mesmo painel.
+                    Cadastre categorias e produtos no mesmo fluxo para reduzir
+                    atrito operacional.
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="mb-5 rounded-2xl border border-primary/20 bg-primary/5 p-3">
-                    <div className="mb-3 flex items-start justify-between gap-3">
+                <CardContent className="grid gap-5">
+                  <div className={cn(mutedPanelClassName, "p-4")}>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
                         <p className="flex items-center gap-2 text-sm font-semibold">
-                          <Tags className="size-4 text-primary" />
+                          <Tags className="size-4 text-violet-700 dark:text-violet-200" />
                           Categorias
                         </p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          O produto precisa estar ligado a uma categoria.
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Estruture o catálogo antes de publicar novos itens.
                         </p>
                       </div>
                       <Badge variant="secondary">{categories.length}</Badge>
                     </div>
 
                     <form
-                      className="grid gap-2 sm:grid-cols-[1fr_auto]"
+                      className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto]"
                       onSubmit={handleCreateCategory}
                     >
                       <Input
@@ -963,7 +1283,7 @@ export default function StoreDashboardPage() {
                     </form>
 
                     {categories.length > 0 ? (
-                      <div className="mt-3 flex flex-wrap gap-1.5">
+                      <div className="mt-4 flex flex-wrap gap-2">
                         {categories.slice(0, 8).map((category) => (
                           <Badge key={category.id} variant="secondary">
                             {category.name}
@@ -976,9 +1296,9 @@ export default function StoreDashboardPage() {
                         ) : null}
                       </div>
                     ) : (
-                      <p className="mt-3 rounded-xl border border-dashed border-primary/30 bg-background/50 p-3 text-xs text-muted-foreground">
-                        Cadastre a primeira categoria para liberar o formulario
-                        de produto.
+                      <p className="mt-4 rounded-2xl border border-dashed border-border bg-background p-3 text-sm text-muted-foreground">
+                        Cadastre a primeira categoria para organizar melhor a
+                        navegação do catálogo.
                       </p>
                     )}
                   </div>
@@ -998,7 +1318,7 @@ export default function StoreDashboardPage() {
                     </div>
 
                     <div className="grid gap-2">
-                      <Label htmlFor="description">Descricao</Label>
+                      <Label htmlFor="description">Descrição</Label>
                       <textarea
                         id="description"
                         value={form.description}
@@ -1007,14 +1327,14 @@ export default function StoreDashboardPage() {
                         }
                         required
                         rows={4}
-                        className="min-h-28 rounded-2xl border border-input bg-background px-3 py-2.5 text-sm transition-colors outline-none placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                        placeholder="Estado do produto, principais usos e o que esta incluso no aluguel."
+                        className={textareaClassName}
+                        placeholder="Estado do produto, principais usos e o que está incluso no aluguel."
                       />
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="grid gap-2">
-                        <Label htmlFor="price">Preco por dia</Label>
+                        <Label htmlFor="price">Preço por dia</Label>
                         <Input
                           id="price"
                           type="number"
@@ -1039,7 +1359,7 @@ export default function StoreDashboardPage() {
                           }
                           disabled={categories.length === 0}
                           required
-                          className="h-10 rounded-2xl border border-input bg-background px-3 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-60"
+                          className={fieldClassName}
                         >
                           <option value="" disabled>
                             {categories.length > 0
@@ -1067,19 +1387,19 @@ export default function StoreDashboardPage() {
                         placeholder="https://..."
                         required
                       />
-                      <div className="overflow-hidden rounded-2xl border border-dashed bg-muted/25">
+                      <div className="overflow-hidden rounded-2xl border border-dashed border-border bg-muted/25">
                         {isHttpUrl(form.photoUrl.trim()) ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={form.photoUrl.trim()}
-                            alt={`Previa de ${form.name || "produto"}`}
+                            alt={`Prévia de ${form.name || "produto"}`}
                             className="aspect-video w-full object-cover"
                           />
                         ) : (
                           <div className="flex aspect-video flex-col items-center justify-center gap-2 text-muted-foreground">
-                            <ImageIcon className="size-8 text-primary" />
+                            <ImageIcon className="size-8 text-violet-700 dark:text-violet-200" />
                             <span className="text-xs">
-                              A previa aparece quando a URL for valida.
+                              A prévia aparece quando a URL for válida.
                             </span>
                           </div>
                         )}
@@ -1089,6 +1409,7 @@ export default function StoreDashboardPage() {
                     <div className="flex flex-wrap gap-2">
                       <Button
                         type="submit"
+                        className={primaryButtonClassName}
                         disabled={
                           isSubmitting || !store || categories.length === 0
                         }
@@ -1096,7 +1417,7 @@ export default function StoreDashboardPage() {
                         {isSubmitting
                           ? "Salvando..."
                           : editingProduct
-                            ? "Salvar alteracoes"
+                            ? "Salvar alterações"
                             : "Cadastrar produto"}
                       </Button>
                       {editingProduct ? (
@@ -1115,9 +1436,13 @@ export default function StoreDashboardPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Produtos da loja</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="size-5 text-violet-700 dark:text-violet-200" />
+                    Catálogo da loja
+                  </CardTitle>
                   <CardDescription>
-                    Edite ou remova itens cadastrados por esta loja.
+                    Edite itens existentes e acompanhe a consistência visual do
+                    inventário.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -1126,11 +1451,11 @@ export default function StoreDashboardPage() {
                       Carregando produtos...
                     </p>
                   ) : products.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed p-5">
+                    <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-5">
                       <p className="font-medium">Nenhum produto cadastrado.</p>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Crie uma categoria, preencha o formulario e o item
-                        aparece aqui para editar ou remover.
+                        Crie uma categoria, cadastre um item e ele aparece aqui
+                        para manutenção.
                       </p>
                     </div>
                   ) : (
@@ -1138,13 +1463,17 @@ export default function StoreDashboardPage() {
                       {products.map((product) => (
                         <div
                           key={product.id}
-                          className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[96px_1fr_auto]"
+                          className={cn(
+                            "grid gap-4 rounded-2xl border border-border/70 bg-card p-4 shadow-sm md:grid-cols-[112px_1fr_auto]",
+                            editingProduct?.id === product.id &&
+                              "border-violet-300 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/20"
+                          )}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={product.photoUrl}
                             alt={product.name}
-                            className="aspect-square w-24 rounded-md border object-cover"
+                            className="aspect-square w-28 rounded-xl border border-border/70 object-cover"
                           />
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
@@ -1152,18 +1481,23 @@ export default function StoreDashboardPage() {
                               <Badge variant="secondary">
                                 {product.categoryName || "Sem categoria"}
                               </Badge>
+                              {editingProduct?.id === product.id ? (
+                                <Badge variant="outline">Em edição</Badge>
+                              ) : null}
                             </div>
-                            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                            <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
                               {product.description}
                             </p>
-                            <p className="mt-2 font-medium">
-                              {currencyFormatter.format(product.pricePerDay)}
-                              <span className="text-xs text-muted-foreground">
-                                /dia
-                              </span>
-                            </p>
+                            <div className="mt-3 flex flex-wrap items-center gap-3">
+                              <p className="font-medium">
+                                {currencyFormatter.format(product.pricePerDay)}
+                                <span className="text-xs text-muted-foreground">
+                                  /dia
+                                </span>
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex items-start gap-1 sm:flex-col">
+                          <div className="flex flex-wrap gap-2 md:w-[170px] md:flex-col">
                             <Button
                               type="button"
                               variant="outline"
@@ -1189,132 +1523,170 @@ export default function StoreDashboardPage() {
                   )}
                 </CardContent>
               </Card>
-            </div>
+            </section>
 
-            <Card id="pedidos">
-              <CardHeader>
-                <CardTitle>Pedidos recebidos</CardTitle>
-                <CardDescription>
-                  Alugueis relacionados aos produtos desta loja.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {storeRents.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Nenhum pedido encontrado para os produtos da loja.
-                  </p>
-                ) : (
-                  <div className="grid gap-3 md:grid-cols-2">
-                    {storeRents.map((rent) => {
-                      const status = getRentStatus(rent, today)
+            <section id="pedidos" className="grid gap-4">
+              <Card>
+                <CardHeader>
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <ReceiptText className="size-5 text-violet-700 dark:text-violet-200" />
+                        Pedidos recebidos
+                      </CardTitle>
+                      <CardDescription>
+                        Aluguéis vinculados aos produtos desta loja, com status
+                        e ações no mesmo lugar.
+                      </CardDescription>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary">
+                        {activeRents.length} ativos
+                      </Badge>
+                      <Badge variant="outline">
+                        {storeRents.length} no histórico
+                      </Badge>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {storeRents.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-5 text-sm text-muted-foreground">
+                      Nenhum pedido encontrado para os produtos da loja.
+                    </div>
+                  ) : (
+                    <div className="grid gap-3">
+                      {storeRents.map((rent) => {
+                        const status = getRentStatus(rent, today)
 
-                      return (
-                        <div key={rent.id} className="rounded-lg border p-3">
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <p className="font-semibold">
-                                {rent.productName}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                Cliente: {rent.renterName}
-                              </p>
-                            </div>
-                            <Badge variant={status.variant}>
-                              {status.label}
-                            </Badge>
-                          </div>
-                          <div className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
-                            <div>
-                              <p className="text-xs text-muted-foreground">
-                                Retirada
-                              </p>
-                              <p>{formatDate(rent.rentalDate)}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground">
-                                Devolucao
-                              </p>
-                              <p>{formatDate(rent.returnDate)}</p>
-                            </div>
-                            {rent.deliveredAt ? (
-                              <div>
-                                <p className="text-xs text-muted-foreground">
-                                  Entregue em
+                        return (
+                          <div
+                            key={rent.id}
+                            className={cn(
+                              "grid gap-4 rounded-2xl border p-4 shadow-sm xl:grid-cols-[1.2fr_0.9fr_220px]",
+                              getRentCardClasses(rent, today)
+                            )}
+                          >
+                            <div className="min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="font-semibold">
+                                  {rent.productName}
                                 </p>
-                                <p>{formatDate(rent.deliveredAt)}</p>
+                                <Badge variant={status.variant}>
+                                  {status.label}
+                                </Badge>
                               </div>
-                            ) : null}
-                            {rent.returnedAt ? (
-                              <div>
-                                <p className="text-xs text-muted-foreground">
-                                  Devolvido em
+                              <p className="mt-2 text-sm text-muted-foreground">
+                                Cliente:{" "}
+                                <span className="font-medium text-foreground">
+                                  {rent.renterName}
+                                </span>
+                              </p>
+                            </div>
+
+                            <div className="grid gap-3 text-sm sm:grid-cols-2">
+                              <div className="rounded-2xl border border-border/70 bg-muted/35 p-3">
+                                <p className="text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                                  Retirada
                                 </p>
-                                <p>{formatDate(rent.returnedAt)}</p>
+                                <p className="mt-1">
+                                  {formatDate(rent.rentalDate)}
+                                </p>
                               </div>
-                            ) : null}
-                          </div>
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant={
-                                rent.status === "Delivered"
-                                  ? "secondary"
-                                  : "outline"
-                              }
-                              disabled={
-                                updatingRentId === rent.id ||
-                                rent.status === "Delivered"
-                              }
-                              onClick={() =>
-                                handleUpdateRentStatus(rent, "Delivered")
-                              }
-                            >
-                              {updatingRentId === rent.id
-                                ? "Atualizando..."
-                                : "Marcar entregue"}
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant={
-                                rent.status === "Returned"
-                                  ? "secondary"
-                                  : "outline"
-                              }
-                              disabled={
-                                updatingRentId === rent.id ||
-                                rent.status === "Returned"
-                              }
-                              onClick={() =>
-                                handleUpdateRentStatus(rent, "Returned")
-                              }
-                            >
-                              {updatingRentId === rent.id
-                                ? "Atualizando..."
-                                : "Marcar devolvido"}
-                            </Button>
-                            {(rent.deliveredAt || rent.returnedAt) ? (
+                              <div className="rounded-2xl border border-border/70 bg-muted/35 p-3">
+                                <p className="text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                                  Devolução
+                                </p>
+                                <p className="mt-1">
+                                  {formatDate(rent.returnDate)}
+                                </p>
+                              </div>
+                              {rent.deliveredAt ? (
+                                <div className="rounded-2xl border border-border/70 bg-muted/35 p-3">
+                                  <p className="text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                                    Entregue em
+                                  </p>
+                                  <p className="mt-1">
+                                    {formatDate(rent.deliveredAt)}
+                                  </p>
+                                </div>
+                              ) : null}
+                              {rent.returnedAt ? (
+                                <div className="rounded-2xl border border-border/70 bg-muted/35 p-3">
+                                  <p className="text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
+                                    Devolvido em
+                                  </p>
+                                  <p className="mt-1">
+                                    {formatDate(rent.returnedAt)}
+                                  </p>
+                                </div>
+                              ) : null}
+                            </div>
+
+                            <div className="flex flex-wrap gap-2 xl:flex-col">
                               <Button
                                 type="button"
                                 size="sm"
-                                variant="ghost"
-                                disabled={updatingRentId === rent.id}
+                                variant={
+                                  rent.status === "Delivered"
+                                    ? "secondary"
+                                    : "outline"
+                                }
+                                disabled={
+                                  updatingRentId === rent.id ||
+                                  rent.status === "Delivered"
+                                }
                                 onClick={() =>
-                                  handleUpdateRentStatus(rent, "Pending")
+                                  handleUpdateRentStatus(rent, "Delivered")
                                 }
                               >
-                                Voltar para pendente
+                                {updatingRentId === rent.id
+                                  ? "Atualizando..."
+                                  : "Marcar entregue"}
                               </Button>
-                            ) : null}
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant={
+                                  rent.status === "Returned"
+                                    ? "secondary"
+                                    : "outline"
+                                }
+                                disabled={
+                                  updatingRentId === rent.id ||
+                                  rent.status === "Returned"
+                                }
+                                onClick={() =>
+                                  handleUpdateRentStatus(rent, "Returned")
+                                }
+                              >
+                                {updatingRentId === rent.id
+                                  ? "Atualizando..."
+                                  : "Marcar devolvido"}
+                              </Button>
+                              {rent.deliveredAt || rent.returnedAt ? (
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  disabled={updatingRentId === rent.id}
+                                  onClick={() =>
+                                    handleUpdateRentStatus(rent, "Pending")
+                                  }
+                                >
+                                  Voltar para pendente
+                                  <ArrowRight className="size-4" />
+                                </Button>
+                              ) : null}
+                            </div>
                           </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                        )
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </section>
           </>
         )}
       </div>

@@ -1,10 +1,10 @@
-import { Geist, Geist_Mono } from "next/font/google"
+import { Geist_Mono, Plus_Jakarta_Sans, Syne } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 
-const fontSans = Geist({
+const fontSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
 })
@@ -14,6 +14,11 @@ const fontMono = Geist_Mono({
   variable: "--font-mono",
 })
 
+const fontDisplay = Syne({
+  subsets: ["latin"],
+  variable: "--font-display",
+})
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -21,11 +26,12 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="pt-BR"
       suppressHydrationWarning
       className={cn(
         "antialiased",
         fontMono.variable,
+        fontDisplay.variable,
         "font-sans",
         fontSans.variable
       )}
