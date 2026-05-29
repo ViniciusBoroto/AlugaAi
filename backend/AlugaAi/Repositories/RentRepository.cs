@@ -16,7 +16,7 @@ namespace AlugaAi.Repositories
             _context = context;
         }
 
-        public async Task<RentViewModel> CreateAsync(CreateRentInputModel request)
+        public async Task<RentCreateResult> CreateAsync(CreateRentInputModel request)
         {
             var rent = new Rent
             {
@@ -32,14 +32,20 @@ namespace AlugaAi.Repositories
             await _context.SaveChangesAsync();
 
             var created = await _context.Rents
-                .Include(r => r.Product)
-                .Include(r => r.Renter)
+                .Include(r => r.Product).ThenInclude(p => p.Store).ThenInclude(s => s.User)
+                .Include(r => r.Renter).ThenInclude(renter => renter.User)
                 .FirstAsync(r => r.Id == rent.Id);
 
-            return ToViewModel(created);
+            return new RentCreateResult(
+                ToViewModel(created),
+                created.Renter.User.Email,
+                created.Renter.Name,
+                created.Product.Name,
+                created.Product.Store.User.Email,
+                created.Product.Store.FantasyName);
         }
 
-        public async Task<List<RentViewModel>> CreateManyAsync(IEnumerable<CreateRentInputModel> requests)
+        public async Task<List<RentCreateResult>> CreateManyAsync(IEnumerable<CreateRentInputModel> requests)
         {
             var rents = requests.Select(request => new Rent
             {
@@ -58,13 +64,19 @@ namespace AlugaAi.Repositories
 
             var created = await _context.Rents
                 .AsNoTracking()
-                .Include(r => r.Product)
-                .Include(r => r.Renter)
+                .Include(r => r.Product).ThenInclude(p => p.Store).ThenInclude(s => s.User)
+                .Include(r => r.Renter).ThenInclude(renter => renter.User)
                 .Where(r => ids.Contains(r.Id))
                 .OrderBy(r => r.RentalDate)
                 .ToListAsync();
 
-            return created.Select(r => ToViewModel(r)).ToList();
+            return created.Select(r => new RentCreateResult(
+                ToViewModel(r),
+                r.Renter.User.Email,
+                r.Renter.Name,
+                r.Product.Name,
+                r.Product.Store.User.Email,
+                r.Product.Store.FantasyName)).ToList();
         }
 
         public async Task<List<RentViewModel>> GetAllAsync()

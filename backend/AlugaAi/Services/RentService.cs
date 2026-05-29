@@ -2,6 +2,7 @@
 using AlugaAi.DTOs.ViewModels;
 using AlugaAi.Entities;
 using AlugaAi.Interfaces;
+using Microsoft.Extensions.Logging;
 using System.Net;
 
 namespace AlugaAi.Services
@@ -11,12 +12,18 @@ namespace AlugaAi.Services
         private readonly IRentRepository _repository;
         private readonly IProductRepository _productRepository;
         private readonly IEmailService _emailService;
+        private readonly ILogger<RentService> _logger;
 
-        public RentService(IRentRepository repository, IProductRepository productRepository, IEmailService emailService)
+        public RentService(
+            IRentRepository repository,
+            IProductRepository productRepository,
+            IEmailService emailService,
+            ILogger<RentService> logger)
         {
             _repository = repository;
             _productRepository = productRepository;
             _emailService = emailService;
+            _logger = logger;
         }
 
         public async Task<RentViewModel> CreateAsync(CreateRentInputModel request)
@@ -33,7 +40,14 @@ namespace AlugaAi.Services
 
             await ValidateStockAsync(request.ProductId, request.Quantity);
 
-            return await _repository.CreateAsync(request);
+            var result = await _repository.CreateAsync(request);
+
+            _logger.LogInformation("Rent {RentId} created for product {ProductName} by renter {RenterName}",
+                result.Rent.Id, result.ProductName, result.RenterName);
+
+            await SendCreationEmails(result);
+
+            return result.Rent;
         }
 
         public async Task<List<RentViewModel>> CreateManyAsync(IEnumerable<CreateRentInputModel> requests)
@@ -61,9 +75,30 @@ namespace AlugaAi.Services
                 await ValidateStockAsync(productId, totalRequested);
             }
 
-            var created = await _repository.CreateManyAsync(requestList);
+            var results = await _repository.CreateManyAsync(requestList);
 
-            return created;
+            foreach (var result in results)
+            {
+                _logger.LogInformation("Rent {RentId} created (batch) for product {ProductName} by renter {RenterName}",
+                    result.Rent.Id, result.ProductName, result.RenterName);
+
+                await SendCreationEmails(result);
+            }
+
+            return results.Select(r => r.Rent).ToList();
+        }
+
+        private async Task SendCreationEmails(RentCreateResult result)
+        {
+            await _emailService.SendAsync(
+                result.RenterEmail,
+                GetCreationRenterSubject(),
+                GetCreationRenterHtml(result));
+
+            await _emailService.SendAsync(
+                result.StoreEmail,
+                GetCreationStoreSubject(),
+                GetCreationStoreHtml(result));
         }
 
         private async Task ValidateStockAsync(Guid productId, int requestedQuantity)
@@ -120,6 +155,9 @@ namespace AlugaAi.Services
                 return null;
             }
 
+            _logger.LogInformation("Sending status email to {Email} for rent {RentId} (status: {Status})",
+                result.RenterEmail, result.Rent.Id, result.Status);
+
             await _emailService.SendAsync(
                 result.RenterEmail,
                 GetStatusEmailSubject(result.Status),
@@ -131,6 +169,44 @@ namespace AlugaAi.Services
         public Task<bool> DeleteAsync(Guid id)
         {
             return _repository.DeleteAsync(id);
+        }
+
+        private static string GetCreationRenterSubject()
+        {
+            return "Sua reserva foi confirmada!";
+        }
+
+        private static string GetCreationRenterHtml(RentCreateResult result)
+        {
+            var renterName = WebUtility.HtmlEncode(result.RenterName);
+            var productName = WebUtility.HtmlEncode(result.ProductName);
+            var storeName = WebUtility.HtmlEncode(result.StoreName);
+
+            return $"""
+                <p>Olá, {renterName}.</p>
+                <p>Sua reserva do produto <strong>{productName}</strong> na loja <strong>{storeName}</strong> foi confirmada!</p>
+                <p>Período: {result.Rent.RentalDate:dd/MM/yyyy} até {result.Rent.ReturnDate:dd/MM/yyyy}.</p>
+                <p>Quantidade: {result.Rent.Quantity} unidade(s).</p>
+                """;
+        }
+
+        private static string GetCreationStoreSubject()
+        {
+            return "Novo aluguel registrado!";
+        }
+
+        private static string GetCreationStoreHtml(RentCreateResult result)
+        {
+            var renterName = WebUtility.HtmlEncode(result.RenterName);
+            var productName = WebUtility.HtmlEncode(result.ProductName);
+            var storeName = WebUtility.HtmlEncode(result.StoreName);
+
+            return $"""
+                <p>Olá, {storeName}.</p>
+                <p>O cliente <strong>{renterName}</strong> acabou de alugar <strong>{productName}</strong>.</p>
+                <p>Período: {result.Rent.RentalDate:dd/MM/yyyy} até {result.Rent.ReturnDate:dd/MM/yyyy}.</p>
+                <p>Quantidade: {result.Rent.Quantity} unidade(s).</p>
+                """;
         }
 
         private static string GetStatusEmailSubject(RentStatus status)
