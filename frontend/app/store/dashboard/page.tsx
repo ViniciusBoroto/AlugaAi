@@ -781,17 +781,35 @@ export default function StoreDashboardPage() {
     setError(null)
     setSuccess(null)
 
-    try {
-      const updatedRent = await updateRentStatus(rent.id, {
-        status,
-        occurredAt: new Date().toISOString(),
-      })
+    const now = new Date().toISOString()
 
-      setRents((current) =>
-        current.map((item) => (item.id === rent.id ? updatedRent : item))
-      )
+    setRents((current) =>
+      current.map((item) => {
+        if (item.id !== rent.id) return item
+
+        if (status === "Delivered") {
+          return { ...item, status, deliveredAt: now, returnedAt: null }
+        }
+
+        if (status === "Returned") {
+          return {
+            ...item,
+            status,
+            deliveredAt: item.deliveredAt ?? now,
+            returnedAt: now,
+          }
+        }
+
+        return { ...item, status, deliveredAt: null, returnedAt: null }
+      })
+    )
+
+    try {
+      await updateRentStatus(rent.id, { status, occurredAt: now })
+      await loadDashboard()
       setSuccess(getStatusSuccessMessage(status))
     } catch (err) {
+      await loadDashboard()
       setError(
         err instanceof Error
           ? err.message
