@@ -59,6 +59,7 @@ export function RentalDatePicker({
   const [confirmationMessage, setConfirmationMessage] = useState("")
   const [errorMessage, setErrorMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showConfirmation, setShowConfirmation] = useState(false)
 
   const today = useMemo(() => {
     const date = new Date()
@@ -68,6 +69,7 @@ export function RentalDatePicker({
 
   const rentalDays = getRentalDays(range)
   const total = rentalDays * pricePerDay
+  const isStoreUser = user?.role === "Store"
   const canConfirm = Boolean(range?.from)
   const selectedReturnDate = range?.to ?? range?.from
 
@@ -88,7 +90,7 @@ export function RentalDatePicker({
     }
 
     if (user.role !== "Renter") {
-      setErrorMessage("Contas de loja não podem alugar produtos.")
+      setErrorMessage("Contas de loja nao podem alugar produtos.")
       return
     }
 
@@ -102,6 +104,7 @@ export function RentalDatePicker({
     setIsSubmitting(true)
     setErrorMessage("")
     setConfirmationMessage("")
+    setShowConfirmation(false)
 
     try {
       await createRent({
@@ -114,6 +117,7 @@ export function RentalDatePicker({
       setConfirmationMessage(
         `Locação confirmada para o período de ${formatDate(range.from)} até ${formatDate(returnDate)}.`
       )
+      setShowConfirmation(true)
     } catch (err) {
       setErrorMessage(
         err instanceof Error ? err.message : "Não foi possível criar o aluguel."
@@ -277,27 +281,17 @@ export function RentalDatePicker({
 
         <Button
           size="lg"
-          className="h-[3.35rem] w-full rounded-xl text-base"
+          className="mt-3 h-11 w-full rounded-lg"
           disabled={!canConfirm || isSubmitting}
           onClick={handleConfirm}
         >
           <CheckCircle2 className="size-4" />
           {isSubmitting
-            ? "Confirmando locação..."
+            ? "Confirmando..."
             : canConfirm
-              ? "Confirmar locação"
-              : "Escolha a retirada"}
+              ? "Confirmar aluguel"
+              : "Selecione uma data"}
         </Button>
-
-        <p className="text-sm leading-6 text-muted-foreground">
-          {canConfirm
-            ? "Revise o período selecionado antes de confirmar."
-            : "Selecione a retirada para liberar o cálculo do período."}
-        </p>
-
-        <p className="text-sm leading-6 text-muted-foreground">
-          A confirmação da locação é feita com uma conta de cliente.
-        </p>
 
         {errorMessage ? (
           <div
@@ -312,7 +306,7 @@ export function RentalDatePicker({
           <div
             role="status"
             aria-live="polite"
-            className="rounded-2xl border border-emerald-500/35 bg-emerald-500/10 p-3 text-sm font-medium text-emerald-700 dark:text-emerald-200"
+            className="mt-3 rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm font-medium text-emerald-700 dark:text-emerald-200"
           >
             {confirmationMessage}
           </div>
