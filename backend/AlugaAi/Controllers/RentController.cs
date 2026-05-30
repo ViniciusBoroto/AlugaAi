@@ -1,5 +1,6 @@
 ﻿using AlugaAi.DTOs.InputModels;
 using AlugaAi.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AlugaAi.Controllers
@@ -15,6 +16,7 @@ namespace AlugaAi.Controllers
             _service = service;
         }
         [HttpPost("batch")]
+        [Authorize(Roles = "Renter")]
         public async Task<IActionResult> CreateMany(IEnumerable<CreateRentInputModel> request)
         {
             try
@@ -34,6 +36,7 @@ namespace AlugaAi.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Renter")]
         public async Task<IActionResult> Create(CreateRentInputModel request)
         {
             try
